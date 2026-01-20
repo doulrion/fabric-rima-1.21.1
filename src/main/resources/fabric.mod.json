@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "rima",
+	"version": "${version}",
+	"name": "rima",
+	"description": "This is a Mod made for the Rima RP Project",
+	"authors": [
+		"Doulrion",
+		"InherentlyBadNoodles"
+	],
+	"contact": {
+		"homepage": "https://doulrion.github.io",
+		"sources": "https://github.com/doulrion/fabric-rima-1.21.1"
+	},
+	"license": "MIT",
+	"icon": "assets/rima/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.doulrion.rima.Rima"
+		],
+		"fabric-datagen": [
+			"com.doulrion.rima.RimaDataGenerator"
+		],
+		"client": [
+			"com.doulrion.rima.RimaClient"
+		]
+	},
+	"mixins": [
+		"rima.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
