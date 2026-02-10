@@ -1,6 +1,8 @@
 package com.doulrion.rima.item;
 
 import com.doulrion.rima.Rima;
+import com.doulrion.rima.item.custom.KeyItem;
+import com.doulrion.rima.item.custom.LockItem;
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.item.Item;
@@ -13,9 +15,9 @@ import net.minecraft.util.Identifier;
 
 public class LockItems {
 
-    public static final Item KEY_ITEM = registerItem("key", new Item(new Item.Settings()));
+    public static final Item KEY_ITEM = registerItem("key", new KeyItem(new Item.Settings()));
     public static final Item ADMIN_KEY_ITEM = registerItem("admin_key", new Item(new Item.Settings()));
-    public static final Item LOCK_ITEM = registerItem("lock", new Item(new Item.Settings()));
+    public static final Item LOCK_ITEM = registerItem("lock", new LockItem(new Item.Settings()));
     public static final ItemGroup LOCK_GROUP = Registry.register(Registries.ITEM_GROUP,
             Identifier.of(Rima.MOD_ID, "lock_group"), FabricItemGroup.builder()
                     .icon(() -> new ItemStack(LOCK_ITEM))
