@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "III",
+        "NN ",
+        "   "
+    ],
+    "key": {
+        "I": {
+            "item": "minecraft:iron_ingot"
+        },
+        "N": {
+            "item": "minecraft:iron_nugget"
+        }
+    },
+    "result": {
+        "id": "rima:key",
+        "count": 1
+    }
+}
