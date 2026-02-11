@@ -7,7 +7,6 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.nbt.NbtElement;
 
@@ -17,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
+ 
 import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.IntfLockableContainerBlockEntity;
 
@@ -30,7 +29,7 @@ public abstract class LockableContainerBlockEntityMixin implements IntfLockableC
 
     public void setKey(String key) {
         rima_key = key;
-        ((ChestBlockEntity) (Object) this).markDirty();
+        ((LockableContainerBlockEntity) (Object) this).markDirty();
     }
 
     public String getKey() {
@@ -75,15 +74,17 @@ public abstract class LockableContainerBlockEntityMixin implements IntfLockableC
 
         player.sendMessage(Text.literal("Debug: lock_id='" + rima_key + "'"), false); // debug
         if (isLocked()) { // chest locked
-            player.sendMessage(Text.literal("Debug: Chest is Locked!"), false);
-            if (player.getMainHandStack().getItem().toString().equals("rima:admin_key")
-                    || (player.getMainHandStack().getItem().toString().equals("rima:key") &&
-                            doesUnlock(player.getMainHandStack().get(RimaDataComponentTypes.RIMA_LOCK)))) { // unlockable
-                player.sendMessage(Text.literal("Debug: Chest opened with matching key."), false);
+            player.sendMessage(Text.literal("Chest is Locked!"), true);
+            if (player.isCreative()
+                    || player.isSpectator()
+                    || player.getMainHandStack().getItem().toString().equals("rima:admin_key")
+                    || (player.getMainHandStack().getItem().toString().equals("rima:key")
+                        && doesUnlock(player.getMainHandStack().get(RimaDataComponentTypes.RIMA_LOCK)))) { // unlockable
+                player.sendMessage(Text.literal("Debug: Chest opened with matching key."), true);
                 return true;
             }
         } else { // chest not locked
-            player.sendMessage(Text.literal("Debug: Chest is Not Locked!"), false);
+            player.sendMessage(Text.literal("Debug: Chest is Not Locked!"), true);
             return true;
         }
         return false;

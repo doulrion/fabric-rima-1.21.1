@@ -4,13 +4,7 @@ import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.IntfLockableContainerBlockEntity;
 
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.DynamicRegistryManager;
-
-import java.lang.reflect.Method;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
