@@ -1,9 +1,11 @@
 package com.doulrion.rima.item.custom;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
+import com.doulrion.rima.interfaces.IntfLockableContainerBlockEntity;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.ChestBlockEntity;
+import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -25,33 +27,40 @@ public class LockItem extends Item {
 
     @Override
     public void onCraft(ItemStack stack, World world) {
-        if(stack.get(RimaDataComponentTypes.RIMA_LOCK) != null) {
+        if (stack.get(RimaDataComponentTypes.RIMA_LOCK) != null) {
             return;
         }
         String uniqueID = java.util.UUID.randomUUID().toString();
         stack.set(RimaDataComponentTypes.RIMA_LOCK, uniqueID);
         super.onCraft(stack, world);
     }
-    
+
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         ItemStack stack = context.getStack();
         PlayerEntity player = context.getPlayer();
         BlockPos pos = context.getBlockPos();
 
-        if(player == null 
-            || pos == null) {
+        if (player == null
+                || pos == null) {
             return ActionResult.PASS;
         }
 
         BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
-        if(!player.isSneaking() 
-            || !(blockEntity instanceof ChestBlockEntity) 
-            || stack.get(RimaDataComponentTypes.RIMA_LOCK) == null) {
+        if (!player.isSneaking()
+                || !(blockEntity instanceof LockableContainerBlockEntity)
+                || stack.get(RimaDataComponentTypes.RIMA_LOCK) == null) {
             return ActionResult.PASS;
         }
+        IntfLockableContainerBlockEntity lCon = (IntfLockableContainerBlockEntity) (Object) blockEntity;
+        if (lCon.isLocked()) { // do not lock if already locked
+            player.sendMessage(Text.literal("Can not lock. Chest is already locked!"), false);
+            return ActionResult.PASS;
+        }
+        lCon.setKey(stack.get(RimaDataComponentTypes.RIMA_LOCK)); // sets key
+        stack.decrement(1);
 
-        // TODO: Implement locking logic here.
+        player.sendMessage(Text.literal("Chest has been locked"), false);
 
         return ActionResult.SUCCESS;
     }
