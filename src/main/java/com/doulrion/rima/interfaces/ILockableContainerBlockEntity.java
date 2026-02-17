@@ -1,6 +1,6 @@
 package com.doulrion.rima.interfaces;
 
-public interface IntfLockableContainerBlockEntity {
+public interface ILockableContainerBlockEntity {
     public void setKey(String key);
 
     public String getKey();

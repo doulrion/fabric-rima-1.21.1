@@ -18,10 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.interfaces.IntfLockableContainerBlockEntity;
+import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
 
 @Mixin(LockableContainerBlockEntity.class)
-public abstract class LockableContainerBlockEntityMixin implements IntfLockableContainerBlockEntity {
+public abstract class LockableContainerBlockEntityMixin implements ILockableContainerBlockEntity {
     private static String rima_key_key = "rima_key";
 
     @Unique

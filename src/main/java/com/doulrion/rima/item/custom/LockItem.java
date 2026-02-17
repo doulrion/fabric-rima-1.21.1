@@ -1,7 +1,7 @@
 package com.doulrion.rima.item.custom;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.interfaces.IntfLockableContainerBlockEntity;
+import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
@@ -46,7 +46,7 @@ public class LockItem extends Item {
                 || stack.get(RimaDataComponentTypes.RIMA_LOCK) == null) {
             return ActionResult.PASS;
         }
-        IntfLockableContainerBlockEntity lCon = (IntfLockableContainerBlockEntity) (Object) blockEntity;
+        ILockableContainerBlockEntity lCon = (ILockableContainerBlockEntity) (Object) blockEntity;
         if (lCon.isLocked()) { // do not lock if already locked
             player.sendMessage(Text.literal("Can not lock. Chest is already locked!"), false);
             return ActionResult.PASS;
