@@ -1,15 +1,15 @@
 {
-	"required": true,
-	"package": "com.doulrion.rima.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ExampleMixin",
-		"ChestOpenMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+    "required": true,
+    "package": "com.doulrion.rima.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "ExampleMixin",
+        "LockableContainerBlockEntityMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "overwrites": {
+        "requireAnnotations": true
+    }
 }
