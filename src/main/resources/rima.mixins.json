@@ -4,6 +4,9 @@
     "compatibilityLevel": "JAVA_21",
     "mixins": [
         "ExampleMixin",
+        "GrindstoneInputSlotMixin",
+        "GrindstoneOutputSlotMixin",
+        "GrindstoneScreenHandlerMixin",
         "LockableContainerBlockEntityMixin"
     ],
     "injectors": {

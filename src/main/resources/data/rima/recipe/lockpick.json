@@ -1,9 +1,9 @@
 {
     "type": "minecraft:crafting_shaped",
     "pattern": [
-        " N ",
         "III",
-        "  N"
+        "NN ",
+        "   "
     ],
     "key": {
         "I": {
@@ -14,7 +14,7 @@
         }
     },
     "result": {
-        "id": "rima:key",
+        "id": "rima:lockpick",
         "count": 1
     }
 }

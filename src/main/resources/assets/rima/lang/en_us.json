@@ -1,6 +1,10 @@
 {
     "item.rima.key": "Key",
     "item.rima.admin_key": "Admin Key",
+    "item.rima.lockpick": "Lockpick",
     "item.rima.lock": "Lock",
-    "itemGroup.rima.lock_group": "Locks"
+    "item.rima.admin_lock": "Admin Lock",
+    "itemGroup.rima.lock_group": "Locks",
+    "tooltip.rima.lock_uuid": "Lock ID: %s",
+    "message.rima.chest_unlocked": "Chest has been unlocked!"
 }

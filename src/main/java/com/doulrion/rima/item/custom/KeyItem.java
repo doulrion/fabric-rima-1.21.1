@@ -2,6 +2,10 @@ package com.doulrion.rima.item.custom;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
+import com.doulrion.rima.item.LockItems;
+
+import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
@@ -9,29 +13,40 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.text.Text;
 
 public class KeyItem extends Item {
     public KeyItem(Settings settings) {
         super(settings);
     }
 
-    @Override
-    public void onCraft(ItemStack stack, World world) {
-        super.onCraft(stack, world);
+    private boolean canUnlock(ILockableContainerBlockEntity lockableContainer, ItemStack stack) {
+        if (stack.isOf(LockItems.ADMIN_KEY_ITEM)) {
+            return true;
+        }
+
+        return !lockableContainer.isAdminLocked()
+                && Objects.equals(stack.get(RimaDataComponentTypes.RIMA_LOCK), lockableContainer.getKey());
     }
 
-    private boolean canUnlock(String lockKey, ItemStack stack) {
-        if (stack.getItem().toString().equals("rima:admin_key")) {
-            return true;
-        } else {
-            String keyKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
-            return (keyKey != null)
-                    && (keyKey == lockKey);
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
+
+        String lockKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
+        if (lockKey == null) {
+            return;
         }
+
+        MutableText tooltipText = Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY);
+        tooltip.add(tooltipText);
     }
 
     @Override
@@ -54,14 +69,24 @@ public class KeyItem extends Item {
         if (!lCon.isLocked()) { // dont do anything. chest isnt even locked
             return ActionResult.PASS;
         }
-        if (!canUnlock(lCon.getKey(), stack)) {
-            player.sendMessage(Text.literal("Can not Unlock. Missmatched Keys!"), false);
+        if (!canUnlock(lCon, stack)) {
+            player.sendMessage(Text.literal("Can not Unlock. Mismatched Keys!"), false);
             return ActionResult.PASS;
         }
 
+        boolean adminLocked = lCon.isAdminLocked();
+        String lockKey = lCon.getKey();
+
+        lCon.setAdminLocked(false);
         lCon.setKey(null); // unlock chest
-        player.sendMessage(Text.literal("Debug: Chest has been Unlocked!"), false);
-        // TODO: Drop Lock Item
+        if (!context.getWorld().isClient()) {
+            ItemStack droppedLock = new ItemStack(adminLocked ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
+            if (!adminLocked && lockKey != null) {
+                droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
+            }
+            ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
+        }
+        player.sendMessage(Text.translatable("message.rima.chest_unlocked"), false);
 
         return ActionResult.SUCCESS;
     }

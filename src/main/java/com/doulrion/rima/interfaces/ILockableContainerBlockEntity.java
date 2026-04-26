@@ -5,6 +5,10 @@ public interface ILockableContainerBlockEntity {
 
     public String getKey();
 
+    public void setAdminLocked(boolean adminLocked);
+
+    public boolean isAdminLocked();
+
     public boolean isLocked();
 
     public boolean doesUnlock(String key);
