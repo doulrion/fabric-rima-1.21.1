@@ -3,24 +3,41 @@ package com.doulrion.rima.item.custom;
 import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
 
+import java.util.List;
+
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class LockItem extends Item {
+    private final boolean adminOnly;
+
     public LockItem(Settings settings) {
+        this(settings, false);
+    }
+
+    public LockItem(Settings settings, boolean adminOnly) {
         super(settings);
+        this.adminOnly = adminOnly;
     }
 
     @Override
     public void onCraft(ItemStack stack, World world) {
+        if (adminOnly) {
+            super.onCraft(stack, world);
+            return;
+        }
+
         if (stack.get(RimaDataComponentTypes.RIMA_LOCK) != null) {
             return;
         }
@@ -30,8 +47,26 @@ public class LockItem extends Item {
     }
 
     @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
+
+        if (adminOnly) {
+            return;
+        }
+
+        String lockKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
+        if (lockKey == null) {
+            return;
+        }
+
+        MutableText tooltipText = Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY);
+        tooltip.add(tooltipText);
+    }
+
+    @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         ItemStack stack = context.getStack();
+        String lockKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
         PlayerEntity player = context.getPlayer();
         BlockPos pos = context.getBlockPos();
 
@@ -43,7 +78,7 @@ public class LockItem extends Item {
         BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
         if (!player.isSneaking()
                 || !(blockEntity instanceof LockableContainerBlockEntity)
-                || stack.get(RimaDataComponentTypes.RIMA_LOCK) == null) {
+                || (!adminOnly && lockKey == null)) {
             return ActionResult.PASS;
         }
         ILockableContainerBlockEntity lCon = (ILockableContainerBlockEntity) (Object) blockEntity;
@@ -51,10 +86,11 @@ public class LockItem extends Item {
             player.sendMessage(Text.literal("Can not lock. Chest is already locked!"), false);
             return ActionResult.PASS;
         }
-        lCon.setKey(stack.get(RimaDataComponentTypes.RIMA_LOCK)); // sets key
+        lCon.setAdminLocked(adminOnly);
+        lCon.setKey(adminOnly ? null : lockKey); // sets key
         stack.decrement(1);
 
-        player.sendMessage(Text.literal("Chest has been locked"), false);
+        player.sendMessage(Text.literal(adminOnly ? "Chest has been admin locked" : "Chest has been locked"), false);
 
         return ActionResult.SUCCESS;
     }
