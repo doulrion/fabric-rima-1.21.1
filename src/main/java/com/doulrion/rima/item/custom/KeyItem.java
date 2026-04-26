@@ -70,7 +70,7 @@ public class KeyItem extends Item {
             return ActionResult.PASS;
         }
         if (!canUnlock(lCon, stack)) {
-            player.sendMessage(Text.literal("Can not Unlock. Missmatched Keys!"), false);
+            player.sendMessage(Text.literal("Can not Unlock. Mismatched Keys!"), false);
             return ActionResult.PASS;
         }
 
