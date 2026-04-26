@@ -86,7 +86,7 @@ public class KeyItem extends Item {
             }
             ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
         }
-        player.sendMessage(Text.literal("Debug: Chest has been Unlocked!"), false);
+        player.sendMessage(Text.translatable("message.rima.chest_unlocked"), false);
 
         return ActionResult.SUCCESS;
     }

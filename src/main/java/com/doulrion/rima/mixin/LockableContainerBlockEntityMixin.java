@@ -89,11 +89,11 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableCont
         }
     }
 
-    @Inject(method = "checkUnlocked", at = @At("RETURN"))
-    public boolean checkUnlocked(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "checkUnlocked", at = @At("RETURN"), cancellable = true)
+    public void checkUnlocked(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
 
         if (!cir.getReturnValue()) {
-            return false; // do not handle when default behavior decides entity is locked
+            return; // do not handle when default behavior decides entity is locked
         }
 
         ItemStack heldStack = player.getMainHandStack();
@@ -106,12 +106,13 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableCont
                     || (!isAdminLocked()
                         && heldStack.isOf(LockItems.KEY_ITEM)
                         && doesUnlock(heldStack.get(RimaDataComponentTypes.RIMA_LOCK)))) { // unlockable
-                return true;
+                cir.setReturnValue(true);
+            } else {
+                cir.setReturnValue(false);
             }
         } else { // chest not locked
-            return true;
+            cir.setReturnValue(true);
         }
-        return false;
     }
 
     @Unique
