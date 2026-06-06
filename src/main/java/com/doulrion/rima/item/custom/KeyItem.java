@@ -1,5 +1,6 @@
 package com.doulrion.rima.item.custom;
 
+import com.doulrion.rima.blockentity.LockedDoorBlockEntity;
 import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
 import com.doulrion.rima.item.LockItems;
@@ -7,8 +8,10 @@ import com.doulrion.rima.item.LockItems;
 import java.util.List;
 import java.util.Objects;
 
+import net.minecraft.block.DoorBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.state.property.Properties;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,7 +23,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class KeyItem extends Item {
     public KeyItem(Settings settings) {
@@ -34,6 +36,15 @@ public class KeyItem extends Item {
 
         return !lockableContainer.isAdminLocked()
                 && Objects.equals(stack.get(RimaDataComponentTypes.RIMA_LOCK), lockableContainer.getKey());
+    }
+
+    private boolean canUnlock(LockedDoorBlockEntity door, ItemStack stack) {
+        if (stack.isOf(LockItems.ADMIN_KEY_ITEM)) {
+            return true;
+        }
+
+        return !door.isAdminLocked()
+                && Objects.equals(stack.get(RimaDataComponentTypes.RIMA_LOCK), door.getKey());
     }
 
     @Override
@@ -61,33 +72,55 @@ public class KeyItem extends Item {
         }
 
         BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
-        if (!player.isSneaking()
-                || !(blockEntity instanceof LockableContainerBlockEntity)) {
-            return ActionResult.PASS;
+        var blockState = context.getWorld().getBlockState(pos);
+        if (blockState.getBlock() instanceof DoorBlock) {
+            var targetPos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
+                    blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
+                    ? pos.down() : pos;
+            blockEntity = context.getWorld().getBlockEntity(targetPos);
         }
-        ILockableContainerBlockEntity lCon = (ILockableContainerBlockEntity) (Object) blockEntity;
-        if (!lCon.isLocked()) { // dont do anything. chest isnt even locked
-            return ActionResult.PASS;
-        }
-        if (!canUnlock(lCon, stack)) {
-            player.sendMessage(Text.literal("Can not Unlock. Mismatched Keys!"), false);
+
+        if (!player.isSneaking()) {
             return ActionResult.PASS;
         }
 
-        boolean adminLocked = lCon.isAdminLocked();
-        String lockKey = lCon.getKey();
-
-        lCon.setAdminLocked(false);
-        lCon.setKey(null); // unlock chest
-        if (!context.getWorld().isClient()) {
-            ItemStack droppedLock = new ItemStack(adminLocked ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
-            if (!adminLocked && lockKey != null) {
-                droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
-            }
-            ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
+        if (blockEntity instanceof ILockableContainerBlockEntity container 
+            && container.isLocked() 
+            && canUnlock(container, stack)) {
+                boolean adminLocked = container.isAdminLocked();
+                String lockKey = container.getKey();
+                container.setAdminLocked(false);
+                container.setKey(null); // unlock chest
+                if (!context.getWorld().isClient()) {
+                    ItemStack droppedLock = new ItemStack(adminLocked ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
+                    if (!adminLocked && lockKey != null) {
+                        droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
+                    }
+                    ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
+                    player.sendMessage(Text.translatable("message.rima.chest_unlocked"), false);
+                }
+                return ActionResult.SUCCESS;
         }
-        player.sendMessage(Text.translatable("message.rima.chest_unlocked"), false);
 
-        return ActionResult.SUCCESS;
+        if (blockEntity instanceof LockedDoorBlockEntity door 
+            && door.isLocked() 
+            && canUnlock(door, stack)) {
+                boolean adminLocked = door.isAdminLocked();
+                String lockKey = door.getKey();
+                door.setAdminLocked(false);
+                door.setKey(null); // unlock door
+                if (!context.getWorld().isClient()) {
+                    ItemStack droppedLock = new ItemStack(adminLocked ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
+                    if (!adminLocked && lockKey != null) {
+                        droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
+                    }
+                    ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
+                    player.sendMessage(Text.translatable("message.rima.door_unlocked"), false);
+                }
+                return ActionResult.SUCCESS;
+        }
+        
+
+        return ActionResult.PASS;
     }
 }
