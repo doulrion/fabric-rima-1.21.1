@@ -16,7 +16,6 @@ import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DoorBlock.class)
@@ -50,7 +49,7 @@ public class DoorBlockMixin {
             }
         }
 
-        player.sendMessage(Text.literal("This door is locked."), true);
+        player.sendMessage(Text.translatable("message.rima.door_is_locked"), true);
         cir.setReturnValue(ActionResult.FAIL);
     }
 
@@ -58,24 +57,5 @@ public class DoorBlockMixin {
     return state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)
         && state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)
            == net.minecraft.block.enums.DoubleBlockHalf.UPPER;
-    }
-
-    @Inject(method = "onBreak", at = @At("HEAD"), cancellable = true)
-    private void rima$onBreak(World world, BlockPos pos, BlockState state,
-                           PlayerEntity player,
-                           CallbackInfoReturnable<BlockState> cir) {
-    if (world.isClient) return;
-
-    BlockPos lowerPos = isDoorUpper(state) ? pos.down() : pos;
-    BlockEntity be = world.getBlockEntity(lowerPos);
-
-    if (!(be instanceof LockedDoorBlockEntity door)) return;
-    if (!door.isLocked()) return;
-
-    ItemStack held = player.getMainHandStack();
-    if (held.isOf(LockItems.ADMIN_KEY_ITEM)) return;
-
-    player.sendMessage(Text.literal("You cannot break a locked door."), true);
-    cir.cancel();  // still works the same way
     }
 }

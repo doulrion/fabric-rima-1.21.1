@@ -1,13 +1,22 @@
 package com.doulrion.rima;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.block.DoorBlock;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.enums.DoubleBlockHalf;
+import net.minecraft.state.property.Properties;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.doulrion.rima.item.LockItems;
+import com.doulrion.rima.blockentity.LockedDoorBlockEntity;
 import com.doulrion.rima.blockentity.RimaBlockEntityTypes;
 import com.doulrion.rima.component.RimaDataComponentTypes;
+import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
 
 public class Rima implements ModInitializer {
     public static final String MOD_ID = "rima";
@@ -27,5 +36,31 @@ public class Rima implements ModInitializer {
         RimaBlockEntityTypes.register();
         RimaDataComponentTypes.registerDataComponentTypes();
         LockItems.init();
+        registerEvents();
+    }
+
+    private void registerEvents() {
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
+
+        var blockState = world.getBlockState(pos);
+        if (blockState.getBlock() instanceof DoorBlock) {
+            var targetPos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
+                    blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
+                    ? pos.down() : pos;
+            blockEntity = world.getBlockEntity(targetPos);
+        }
+
+        if (blockEntity instanceof LockedDoorBlockEntity door && door.isLocked()) {
+            player.sendMessage(Text.translatable("message.rima.door_not_breakable"), true);
+            return false; // cancels the break
+        }
+
+        if (blockEntity instanceof ILockableContainerBlockEntity container && container.isLocked()) {
+            player.sendMessage(Text.translatable("message.rima.chest_not_breakable"), true);
+            return false; // cancels the break
+         }
+
+        return true;
+        });
     }
 }

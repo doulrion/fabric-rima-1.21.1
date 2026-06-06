@@ -98,7 +98,7 @@ public class LockItem extends Item {
             door.setAdminLocked(adminOnly);
             door.setKey(adminOnly ? null : lockKey);
             stack.decrement(1);
-            player.sendMessage(Text.literal("Door locked."), true);
+            player.sendMessage(Text.translatable(adminOnly ? "message.rima.door_admin_locked" : "message.rima.door_locked"), true);
             return ActionResult.SUCCESS;
           }
         }
@@ -109,21 +109,20 @@ public class LockItem extends Item {
             container.setAdminLocked(adminOnly);
             container.setKey(adminOnly ? null : lockKey);
             stack.decrement(1);
-            player.sendMessage(Text.literal("Chest locked."), true);
+            player.sendMessage(Text.translatable(adminOnly ? "message.rima.chest_admin_locked" : "message.rima.chest_locked"), true);
             return ActionResult.SUCCESS;
           }
         }
 
-        ILockableContainerBlockEntity lCon = (ILockableContainerBlockEntity) (Object) blockEntity;
-        if (lCon.isLocked()) { // do not lock if already locked
-            player.sendMessage(Text.literal("Can not lock. Chest is already locked!"), false);
+        if (blockEntity instanceof LockedDoorBlockEntity door && door.isLocked()) {
+            player.sendMessage(Text.translatable("message.rima.door_already_locked"), false);
             return ActionResult.PASS;
         }
-        lCon.setAdminLocked(adminOnly);
-        lCon.setKey(adminOnly ? null : lockKey); // sets key
-        stack.decrement(1);
 
-        player.sendMessage(Text.literal(adminOnly ? "Chest has been admin locked" : "Chest has been locked"), false);
+        if (blockEntity instanceof ILockableContainerBlockEntity container && container.isLocked()) {
+            player.sendMessage(Text.translatable("message.rima.chest_already_locked"), false);
+            return ActionResult.PASS;
+        }
 
         return ActionResult.SUCCESS;
     }

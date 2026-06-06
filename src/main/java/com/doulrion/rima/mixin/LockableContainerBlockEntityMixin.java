@@ -7,6 +7,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
@@ -108,6 +109,7 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableCont
                         && doesUnlock(heldStack.get(RimaDataComponentTypes.RIMA_LOCK)))) { // unlockable
                 cir.setReturnValue(true);
             } else {
+                player.sendMessage(Text.translatable("message.rima.chest_is_locked"), true);
                 cir.setReturnValue(false);
             }
         } else { // chest not locked
