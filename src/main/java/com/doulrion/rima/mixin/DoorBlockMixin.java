@@ -6,6 +6,7 @@ import com.doulrion.rima.item.LockItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
@@ -14,6 +15,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -37,7 +39,7 @@ public class DoorBlockMixin {
         ItemStack held = player.getMainHandStack();
 
         // Admin key bypasses everything
-        if (held.isOf(LockItems.ADMIN_KEY_ITEM)) {
+        if (held.isOf(LockItems.ADMIN_KEY_ITEM) || player.isCreative()) {
             return;
         }
 
@@ -49,6 +51,10 @@ public class DoorBlockMixin {
             }
         }
 
+        if (canLockpick(player, held)) {
+            return;
+        }
+
         player.sendMessage(Text.translatable("message.rima.door_is_locked"), true);
         cir.setReturnValue(ActionResult.FAIL);
     }
@@ -57,5 +63,19 @@ public class DoorBlockMixin {
     return state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)
         && state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)
            == net.minecraft.block.enums.DoubleBlockHalf.UPPER;
+    }
+
+    @Unique
+    private boolean canLockpick(PlayerEntity player, ItemStack heldStack) {
+        if (!heldStack.isOf(LockItems.LOCKPICK_ITEM)) {
+            return false;
+        }
+
+        if (player.getRandom().nextFloat() < 0.05F) {
+            return true;
+        }
+
+        heldStack.damage(Math.max(1, heldStack.getMaxDamage() / 2), player, EquipmentSlot.MAINHAND);
+        return false;
     }
 }
