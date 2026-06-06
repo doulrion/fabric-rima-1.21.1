@@ -1,12 +1,15 @@
 package com.doulrion.rima.item.custom;
 
+import com.doulrion.rima.blockentity.LockedDoorBlockEntity;
 import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
 
 import java.util.List;
 
+import net.minecraft.block.DoorBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.state.property.Properties;
+import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -76,11 +79,41 @@ public class LockItem extends Item {
         }
 
         BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
+        var blockState = context.getWorld().getBlockState(pos);
+        if (blockState.getBlock() instanceof DoorBlock) {
+            var targetPos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
+                    blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
+                    ? pos.down() : pos;
+            blockEntity = context.getWorld().getBlockEntity(targetPos);
+        }
+
         if (!player.isSneaking()
-                || !(blockEntity instanceof LockableContainerBlockEntity)
                 || (!adminOnly && lockKey == null)) {
             return ActionResult.PASS;
         }
+
+        if (blockEntity instanceof LockedDoorBlockEntity door && !door.isLocked()) {
+          String lockId = stack.get(RimaDataComponentTypes.RIMA_LOCK);
+          if (lockId != null) {
+            door.setAdminLocked(adminOnly);
+            door.setKey(adminOnly ? null : lockKey);
+            stack.decrement(1);
+            player.sendMessage(Text.literal("Door locked."), true);
+            return ActionResult.SUCCESS;
+          }
+        }
+
+        if (blockEntity instanceof ILockableContainerBlockEntity container && !container.isLocked()) {
+          String lockId = stack.get(RimaDataComponentTypes.RIMA_LOCK);
+          if (lockId != null) {
+            container.setAdminLocked(adminOnly);
+            container.setKey(adminOnly ? null : lockKey);
+            stack.decrement(1);
+            player.sendMessage(Text.literal("Chest locked."), true);
+            return ActionResult.SUCCESS;
+          }
+        }
+
         ILockableContainerBlockEntity lCon = (ILockableContainerBlockEntity) (Object) blockEntity;
         if (lCon.isLocked()) { // do not lock if already locked
             player.sendMessage(Text.literal("Can not lock. Chest is already locked!"), false);

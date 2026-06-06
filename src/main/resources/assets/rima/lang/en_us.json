@@ -6,5 +6,6 @@
     "item.rima.admin_lock": "Admin Lock",
     "itemGroup.rima.lock_group": "Locks",
     "tooltip.rima.lock_uuid": "Lock ID: %s",
-    "message.rima.chest_unlocked": "Chest has been unlocked!"
+    "message.rima.chest_unlocked": "Chest has been unlocked!",
+    "message.rima.door_unlocked": "Door has been unlocked!"
 }

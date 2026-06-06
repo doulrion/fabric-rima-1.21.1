@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.doulrion.rima.item.LockItems;
+import com.doulrion.rima.blockentity.RimaBlockEntityTypes;
 import com.doulrion.rima.component.RimaDataComponentTypes;
 
 public class Rima implements ModInitializer {
@@ -23,6 +24,7 @@ public class Rima implements ModInitializer {
         // Proceed with mild caution.
 
         LOGGER.info("Rima has been initialized!");
+        RimaBlockEntityTypes.register();
         RimaDataComponentTypes.registerDataComponentTypes();
         LockItems.init();
     }
