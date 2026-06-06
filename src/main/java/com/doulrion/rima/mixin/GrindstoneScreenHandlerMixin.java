@@ -19,10 +19,19 @@ public abstract class GrindstoneScreenHandlerMixin {
 
     @Inject(method = "getOutputStack", at = @At("HEAD"), cancellable = true)
     private void rima$getOutputStack(ItemStack firstInput, ItemStack secondInput, CallbackInfoReturnable<ItemStack> cir) {
-        if (!GrindstoneLockHelper.isKeyLockCombination(firstInput, secondInput)) {
-            return;
+        if (GrindstoneLockHelper.isKeyLockCombination(firstInput, secondInput)) {
+            cir.setReturnValue(GrindstoneLockHelper.createKeyFromLockResult(firstInput));
         }
-
-        cir.setReturnValue(GrindstoneLockHelper.createKeyResult(firstInput, secondInput));
+        else if (GrindstoneLockHelper.isKeyDuplication(firstInput, secondInput)) {
+            cir.setReturnValue(GrindstoneLockHelper.createKeyFromKeyResult(firstInput));
+        }
+        else if (GrindstoneLockHelper.isLockKeyCombination(firstInput, secondInput)) {
+            cir.setReturnValue(GrindstoneLockHelper.createLockFromKeyResult(firstInput));
+        }
+        else if (GrindstoneLockHelper.isLockDuplication(firstInput, secondInput)) {
+            cir.setReturnValue(GrindstoneLockHelper.createLockFromLockResult(firstInput));
+        }else{
+            return; // continue with vanilla output logic, which will handle non-lock/key inputs as normal
+        }
     }
 }
