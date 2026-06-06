@@ -14,51 +14,77 @@ public final class GrindstoneLockHelper {
     }
 
     public static boolean isKeyLockCombination(ItemStack firstInput, ItemStack secondInput) {
-        return !getKeyStack(firstInput, secondInput).isEmpty()
-            && !getLockStack(firstInput, secondInput).isEmpty();
+        return firstInput.isOf(LockItems.LOCK_ITEM) && isKey(secondInput);
+    }
+    public static boolean isLockKeyCombination(ItemStack firstInput, ItemStack secondInput) {
+        return isKey(firstInput) && secondInput.isOf(LockItems.LOCK_ITEM);
     }
 
-    public static ItemStack createKeyResult(ItemStack firstInput, ItemStack secondInput) {
-        ItemStack lockStack = getLockStack(firstInput, secondInput);
-        if (lockStack.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
+    public static boolean isKeyDuplication(ItemStack firstInput, ItemStack secondInput) {
+        return isKey(firstInput) && isKey(secondInput);
+    }
 
-        String lockKey = lockStack.get(RimaDataComponentTypes.RIMA_LOCK);
-        if (lockKey == null) {
+    public static boolean isLockDuplication(ItemStack firstInput, ItemStack secondInput) {
+        return firstInput.isOf(LockItems.LOCK_ITEM) && secondInput.isOf(LockItems.LOCK_ITEM);
+    }
+
+    public static ItemStack createKeyFromLockResult(ItemStack firstInput) {
+        if(!firstInput.isOf(LockItems.LOCK_ITEM))
+            return ItemStack.EMPTY;
+
+        String keyId = firstInput.get(RimaDataComponentTypes.RIMA_LOCK);
+        if (keyId == null) {
             return ItemStack.EMPTY;
         }
 
         ItemStack result = new ItemStack(LockItems.KEY_ITEM);
-        result.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
+        result.set(RimaDataComponentTypes.RIMA_LOCK, keyId);
+        return result;
+    }
+
+    public static ItemStack createLockFromKeyResult(ItemStack firstInput) {
+        if(!isKey(firstInput))
+            return ItemStack.EMPTY;
+
+        String keyId = firstInput.get(RimaDataComponentTypes.RIMA_LOCK);
+        if (keyId == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack result = new ItemStack(LockItems.LOCK_ITEM);
+        result.set(RimaDataComponentTypes.RIMA_LOCK, keyId);
+        return result;
+    }
+
+    public static ItemStack createKeyFromKeyResult(ItemStack firstInput) {
+        if(!isKey(firstInput))
+            return ItemStack.EMPTY;
+
+        String keyId = firstInput.get(RimaDataComponentTypes.RIMA_LOCK);
+        if (keyId == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack result = new ItemStack(LockItems.KEY_ITEM);
+        result.set(RimaDataComponentTypes.RIMA_LOCK, keyId);
+        return result;
+    }
+
+    public static ItemStack createLockFromLockResult(ItemStack firstInput) {
+        if(!firstInput.isOf(LockItems.LOCK_ITEM))
+            return ItemStack.EMPTY;
+
+        String keyId = firstInput.get(RimaDataComponentTypes.RIMA_LOCK);
+        if (keyId == null) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack result = new ItemStack(LockItems.LOCK_ITEM);
+        result.set(RimaDataComponentTypes.RIMA_LOCK, keyId);
         return result;
     }
 
     public static boolean isKey(ItemStack stack) {
         return stack.isOf(LockItems.KEY_ITEM);
-    }
-
-    private static ItemStack getKeyStack(ItemStack firstInput, ItemStack secondInput) {
-        if (isKey(firstInput)) {
-            return firstInput;
-        }
-
-        if (isKey(secondInput)) {
-            return secondInput;
-        }
-
-        return ItemStack.EMPTY;
-    }
-
-    private static ItemStack getLockStack(ItemStack firstInput, ItemStack secondInput) {
-        if (firstInput.isOf(LockItems.LOCK_ITEM)) {
-            return firstInput;
-        }
-
-        if (secondInput.isOf(LockItems.LOCK_ITEM)) {
-            return secondInput;
-        }
-
-        return ItemStack.EMPTY;
     }
 }
