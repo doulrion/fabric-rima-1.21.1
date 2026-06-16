@@ -17,12 +17,25 @@ import org.spongepowered.asm.mixin.Interface;
 @Implements(@Interface(iface = BlockEntityProvider.class, prefix = "rima$"))
 public abstract class DoorBlockEntityMixin {
 
+    private static final String[] blacklist = new String[] {
+        "yuushya"
+    };
     // Only attach a block entity to the lower half to avoid doubling
     public BlockEntity rima$createBlockEntity(BlockPos pos, BlockState state) {
-        if (state.contains(Properties.DOUBLE_BLOCK_HALF) &&
-            state.get(Properties.DOUBLE_BLOCK_HALF) == net.minecraft.block.enums.DoubleBlockHalf.LOWER) {
+        if ( ! isOnBlacklist( state.getBlock().getName().toString() )
+            && state.contains(Properties.DOUBLE_BLOCK_HALF) 
+            && state.get(Properties.DOUBLE_BLOCK_HALF) == net.minecraft.block.enums.DoubleBlockHalf.LOWER) {
             return new LockedDoorBlockEntity(RimaBlockEntityTypes.LOCKED_DOOR, pos, state);
         }
         return null;
+    }
+
+    private boolean isOnBlacklist(String BlockName) {
+        for (String blacklistedBlock : blacklist) {
+            if (BlockName.contains(blacklistedBlock)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
