@@ -1,7 +1,6 @@
 package com.doulrion.rima.item.custom;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.Rima;
 import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.item.LockItems;

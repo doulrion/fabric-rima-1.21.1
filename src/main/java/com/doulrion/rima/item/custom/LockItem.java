@@ -7,7 +7,6 @@ import com.doulrion.rima.item.LockItems;
 
 import java.util.List;
 
-import net.minecraft.block.DoorBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.state.property.Properties;
 import net.minecraft.block.enums.DoubleBlockHalf;
