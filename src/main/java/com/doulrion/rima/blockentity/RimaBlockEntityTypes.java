@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import com.doulrion.rima.Rima;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.ButtonBlock;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.LeverBlock;
