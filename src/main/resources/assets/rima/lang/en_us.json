@@ -1,23 +1,19 @@
 {
-    "item.rima.key": "Key",
-    "item.rima.admin_key": "Admin Key",
-    "item.rima.lockpick": "Lockpick",
-    "item.rima.lock": "Lock",
-    "item.rima.admin_lock": "Admin Lock",
-    "itemGroup.rima.lock_group": "Locks",
-    "tooltip.rima.lock_uuid": "Lock ID: %s",
+  "item.rima.key": "Key",
+  "item.rima.admin_key": "Admin Key",
+  "item.rima.lockpick": "Lockpick",
+  "item.rima.lock": "Lock",
+  "item.rima.admin_lock": "Admin Lock",
+  "itemGroup.rima.lock_group": "Locks",
+  "tooltip.rima.lock_uuid": "Lock ID: %s",
 
-    "message.rima.chest_unlocked": "Chest has been unlocked!",
-    "message.rima.chest_already_locked": "Chest is already locked!",
-    "message.rima.chest_locked": "Chest has been locked!",
-    "message.rima.chest_admin_locked": "Chest has been admin locked!",
-    "message.rima.chest_is_locked": "This chest is locked!",
-    "message.rima.chest_not_breakable": "You cannot break a locked chest!",
+  "message.rima.unlocked": "Unlocked!",
+  "message.rima.already_locked": "Already locked!",
+  "message.rima.locked": "Locked!",
+  "message.rima.admin_locked": "Admin locked!",
+  "message.rima.is_locked": "This is locked!",
+  "message.rima.not_breakable": "You cannot break a locked block!",
+  "message.rima.wrong_key": "Wrong Key!",
 
-    "message.rima.door_unlocked": "Door has been unlocked!",
-    "message.rima.door_already_locked": "Door is already locked!",
-    "message.rima.door_locked": "Door has been locked!",
-    "message.rima.door_admin_locked": "Door has been admin locked!",
-    "message.rima.door_is_locked": "This door is locked!",
-    "message.rima.door_not_breakable": "You cannot break a locked door!"
+  "message.rima.chest_is_locked": "This chest is locked!"
 }

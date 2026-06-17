@@ -1,14 +1,12 @@
 package com.doulrion.rima.item.custom;
 
-import com.doulrion.rima.blockentity.LockedDoorBlockEntity;
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
+import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
+import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.item.LockItems;
 
 import java.util.List;
-import java.util.Objects;
 
-import net.minecraft.block.DoorBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.state.property.Properties;
 import net.minecraft.block.enums.DoubleBlockHalf;
@@ -17,7 +15,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.ActionResult;
@@ -29,39 +26,35 @@ public class KeyItem extends Item {
         super(settings);
     }
 
-    private boolean canUnlock(ILockableContainerBlockEntity lockableContainer, ItemStack stack) {
-        if (stack.isOf(LockItems.ADMIN_KEY_ITEM)) {
-            return true;
-        }
-
-        return !lockableContainer.isAdminLocked()
-                && Objects.equals(stack.get(RimaDataComponentTypes.RIMA_LOCK), lockableContainer.getKey());
+    public String getLockKey(ItemStack stack) {
+      return isAdmin(stack) ? LockedRimaBlockEntity.adminUUID : stack.get(RimaDataComponentTypes.RIMA_LOCK);
     }
 
-    private boolean canUnlock(LockedDoorBlockEntity door, ItemStack stack) {
-        if (stack.isOf(LockItems.ADMIN_KEY_ITEM)) {
-            return true;
-        }
+    public boolean isAdmin(ItemStack stack) {
+        return stack.isOf(LockItems.ADMIN_KEY_ITEM);
+    }
 
-        return !door.isAdminLocked()
-                && Objects.equals(stack.get(RimaDataComponentTypes.RIMA_LOCK), door.getKey());
+    private boolean canUnlock(ILockableRimaEntity lockableEntity, ItemStack stack) {
+        return isAdmin(stack) || (getLockKey(stack).equals(lockableEntity.getKey()) && !lockableEntity.isAdminLocked());
     }
 
     @Override
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
 
-        String lockKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
-        if (lockKey == null) {
+        String lockKey = getLockKey(stack);
+        if (isAdmin(stack) || getLockKey(stack) == null) {
             return;
         }
 
-        MutableText tooltipText = Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY);
-        tooltip.add(tooltipText);
+        tooltip.add(Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY));
     }
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
+
+        // handle unlocking & action passing for locked blocks
+
         ItemStack stack = context.getStack();
         PlayerEntity player = context.getPlayer();
         BlockPos pos = context.getBlockPos();
@@ -70,57 +63,34 @@ public class KeyItem extends Item {
                 || pos == null) {
             return ActionResult.PASS;
         }
+        
+        var blockState = context.getWorld().getBlockState(pos); 
+        pos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
+                    blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER ? pos.down() : pos; // get lower block for double blocks such as doors
 
-        BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
-        var blockState = context.getWorld().getBlockState(pos);
-        if (blockState.getBlock() instanceof DoorBlock) {
-            var targetPos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
-                    blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
-                    ? pos.down() : pos;
-            blockEntity = context.getWorld().getBlockEntity(targetPos);
-        }
+        BlockEntity blockEntity = context.getWorld().getBlockEntity(pos); // get block entity at position
 
-        if (!player.isSneaking()) {
+        if (!(blockEntity instanceof ILockableRimaEntity lockableEntity) || !lockableEntity.isLocked()){  // block isnt lockable or is not locked
             return ActionResult.PASS;
         }
 
-        if (blockEntity instanceof ILockableContainerBlockEntity container 
-            && container.isLocked() 
-            && canUnlock(container, stack)) {
-                boolean adminLocked = container.isAdminLocked();
-                String lockKey = container.getKey();
-                container.setAdminLocked(false);
-                container.setKey(null); // unlock chest
-                if (!context.getWorld().isClient()) {
-                    ItemStack droppedLock = new ItemStack(adminLocked ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
-                    if (!adminLocked && lockKey != null) {
-                        droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
-                    }
-                    ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
-                    player.sendMessage(Text.translatable("message.rima.chest_unlocked"), false);
-                }
-                return ActionResult.SUCCESS;
+        if (!canUnlock(lockableEntity, stack)) {   // cant unlock. return
+            player.sendMessage(Text.translatable("message.rima.wrong_key"), true);
+            return player.isSneaking() ? ActionResult.PASS : ActionResult.FAIL;   // if not sneaking prevent accidental block placement
         }
 
-        if (blockEntity instanceof LockedDoorBlockEntity door 
-            && door.isLocked() 
-            && canUnlock(door, stack)) {
-                boolean adminLocked = door.isAdminLocked();
-                String lockKey = door.getKey();
-                door.setAdminLocked(false);
-                door.setKey(null); // unlock door
-                if (!context.getWorld().isClient()) {
-                    ItemStack droppedLock = new ItemStack(adminLocked ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
-                    if (!adminLocked && lockKey != null) {
-                        droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockKey);
-                    }
-                    ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
-                    player.sendMessage(Text.translatable("message.rima.door_unlocked"), false);
-                }
-                return ActionResult.SUCCESS;
-        }
-        
-
-        return ActionResult.PASS;
+        if (player.isSneaking()){   // player is sneaking, unlock.
+          if (!context.getWorld().isClient()) {
+            ItemStack droppedLock = new ItemStack(lockableEntity.isAdminLocked() ? LockItems.ADMIN_LOCK_ITEM : LockItems.LOCK_ITEM);
+            if (!lockableEntity.isAdminLocked() && lockableEntity.getKey() != null) {   // only assign id if needed.
+                droppedLock.set(RimaDataComponentTypes.RIMA_LOCK, lockableEntity.getKey());
+            }
+            ItemScatterer.spawn(context.getWorld(), pos.getX(), pos.getY(), pos.getZ(), droppedLock);
+            lockableEntity.setKey(null);
+            player.sendMessage(Text.translatable("message.rima.unlocked"), true);
+            return ActionResult.SUCCESS;
+          }
+        } 
+        return ActionResult.PASS; // allow default interaction        
     }
 }
