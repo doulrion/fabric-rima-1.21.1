@@ -2,8 +2,7 @@ package com.doulrion.rima.mixin;
 
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.TrapdoorBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -17,18 +16,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(DoorBlock.class)
-public class DoorBlockMixin {
+@Mixin(TrapdoorBlock.class)
+public class TrapdoorBlockMixin {
 
     @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
     private void rima$onUse(BlockState state, World world, BlockPos pos,
                              PlayerEntity player, BlockHitResult hit,
                              CallbackInfoReturnable<ActionResult> cir) {
-        if (world.isClient) return;
-
-        BlockEntity be = getLowerBlockEntity(world, pos, state);
-
-        if (be instanceof ILockableRimaEntity lockableEntity) {
+      if (world.getBlockEntity(pos) instanceof ILockableRimaEntity lockableEntity) {
             lockableEntity.HandleOnUse(state, world, pos, player, hit, cir);
         }
     }
@@ -36,23 +31,11 @@ public class DoorBlockMixin {
     @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
     private void rima$neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify,
                               CallbackInfo cir) {
-      if (getLowerBlockEntity(world, pos, state) instanceof ILockableRimaEntity doorEntity && doorEntity.isLocked()) {
+      if (world.getBlockEntity(pos) instanceof ILockableRimaEntity doorEntity && doorEntity.isLocked()) {
         // Prevent BlockUpdate from opening the door if it's locked. Only Player can Unlock
         cir.cancel();
         return;
       }
       
-    }
-
-    private BlockEntity getLowerBlockEntity(World world, BlockPos pos, BlockState state) {
-        if (state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)){
-          if (state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF) == net.minecraft.block.enums.DoubleBlockHalf.UPPER) {
-            return world.getBlockEntity(pos.down());
-          } else {
-            return world.getBlockEntity(pos);
-          }
-        } else {
-            return null;
-        }
     }
 }
