@@ -20,73 +20,69 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
- 
+
+import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
+import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.item.LockItems;
 
 @Mixin(LockableContainerBlockEntity.class)
-public abstract class LockableContainerBlockEntityMixin implements ILockableContainerBlockEntity {
-    private static final String RIMA_KEY_NBT = "rima_key";
-    private static final String RIMA_ADMIN_LOCK_NBT = "rima_admin_lock";
+public abstract class LockableContainerBlockEntityMixin implements ILockableRimaEntity {
 
     @Unique
-    private String rima_key;
+    private String lockKey = null;
 
-    @Unique
-    private boolean rima_admin_lock;
+    // @Unique
+    // private boolean rima_admin_lock;
 
     public void setKey(String key) {
-        rima_key = key;
+        lockKey = key;
         ((LockableContainerBlockEntity) (Object) this).markDirty();
     }
 
     public String getKey() {
-        return rima_key;
+        return lockKey;
     }
 
     public void setAdminLocked(boolean adminLocked) {
-        rima_admin_lock = adminLocked;
+        lockKey = LockedRimaBlockEntity.adminUUID;
         ((LockableContainerBlockEntity) (Object) this).markDirty();
     }
 
     public boolean isAdminLocked() {
-        return rima_admin_lock;
+        return lockKey == LockedRimaBlockEntity.adminUUID;
     }
 
     // public void doOpen()
 
     public boolean isLocked() {
-        return rima_admin_lock || rima_key != null;
+        return isAdminLocked() || lockKey != null;
     }
 
     public boolean doesUnlock(String key) {
-        return Objects.equals(rima_key, key);
+        return Objects.equals(lockKey, key);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(BlockEntityType<?> type, BlockPos pos, BlockState state, CallbackInfo ci) {
-        this.rima_key = null;
-        this.rima_admin_lock = false;
+        this.lockKey = null;
     }
 
     @Inject(method = "readNbt", at = @At(value = "RETURN"))
     private void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        if (nbt.contains(RIMA_KEY_NBT, NbtElement.STRING_TYPE)) {
-            this.rima_key = nbt.getString(RIMA_KEY_NBT);
+        if (nbt.contains(LockedRimaBlockEntity.RIMA_KEY_NBT, NbtElement.STRING_TYPE)) {
+            this.lockKey = nbt.getString(LockedRimaBlockEntity.RIMA_KEY_NBT);
         } else {
-            this.rima_key = null;
+            this.lockKey = null;
         }
-        this.rima_admin_lock = nbt.getBoolean(RIMA_ADMIN_LOCK_NBT);
     }
 
     @Inject(method = "writeNbt", at = @At(value = "RETURN"))
     private void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        if (this.rima_key != null) {
-            nbt.putString(RIMA_KEY_NBT, rima_key);
-        }
-        if (this.rima_admin_lock) {
-            nbt.putBoolean(RIMA_ADMIN_LOCK_NBT, true);
+        if (lockKey != null) {
+            nbt.putString(LockedRimaBlockEntity.RIMA_KEY_NBT, lockKey);
+        } else {
+            nbt.remove(LockedRimaBlockEntity.RIMA_KEY_NBT);
         }
     }
 
@@ -98,7 +94,7 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableCont
         }
 
         ItemStack heldStack = player.getMainHandStack();
-
+        
         if (isLocked()) {
             if (player.isCreative()
                     || player.isSpectator()
@@ -118,7 +114,7 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableCont
     }
 
     @Unique
-    private boolean canLockpick(PlayerEntity player, ItemStack heldStack) {
+    public boolean canLockpick(PlayerEntity player, ItemStack heldStack) {
         if (!heldStack.isOf(LockItems.LOCKPICK_ITEM)) {
             return false;
         }
