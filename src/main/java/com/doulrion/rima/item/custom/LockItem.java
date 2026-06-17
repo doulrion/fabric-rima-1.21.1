@@ -1,8 +1,9 @@
 package com.doulrion.rima.item.custom;
 
-import com.doulrion.rima.blockentity.LockedDoorBlockEntity;
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.interfaces.ILockableContainerBlockEntity;
+import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
+import com.doulrion.rima.interfaces.ILockableRimaEntity;
+import com.doulrion.rima.item.LockItems;
 
 import java.util.List;
 
@@ -15,7 +16,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.ActionResult;
@@ -23,20 +23,22 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class LockItem extends Item {
-    private final boolean adminOnly;
 
     public LockItem(Settings settings) {
-        this(settings, false);
+        super(settings);
     }
 
-    public LockItem(Settings settings, boolean adminOnly) {
-        super(settings);
-        this.adminOnly = adminOnly;
+    public String getLockKey(ItemStack stack) {
+      return isAdmin(stack) ? LockedRimaBlockEntity.adminUUID : stack.get(RimaDataComponentTypes.RIMA_LOCK);
+    }
+
+    public boolean isAdmin(ItemStack stack) {
+        return stack.isOf(LockItems.ADMIN_LOCK_ITEM);
     }
 
     @Override
     public void onCraft(ItemStack stack, World world) {
-        if (adminOnly) {
+        if (isAdmin(stack)) {
             super.onCraft(stack, world);
             return;
         }
@@ -53,23 +55,18 @@ public class LockItem extends Item {
     public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
         super.appendTooltip(stack, context, tooltip, type);
 
-        if (adminOnly) {
+        String lockKey = getLockKey(stack);
+        if (isAdmin(stack) || getLockKey(stack) == null) {
             return;
         }
 
-        String lockKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
-        if (lockKey == null) {
-            return;
-        }
-
-        MutableText tooltipText = Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY);
-        tooltip.add(tooltipText);
+        tooltip.add(Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY));
     }
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         ItemStack stack = context.getStack();
-        String lockKey = stack.get(RimaDataComponentTypes.RIMA_LOCK);
+        String lockKey = getLockKey(stack);
         PlayerEntity player = context.getPlayer();
         BlockPos pos = context.getBlockPos();
 
@@ -78,52 +75,30 @@ public class LockItem extends Item {
             return ActionResult.PASS;
         }
 
-        BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
         var blockState = context.getWorld().getBlockState(pos);
-        if (blockState.getBlock() instanceof DoorBlock) {
-            var targetPos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
-                    blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
-                    ? pos.down() : pos;
-            blockEntity = context.getWorld().getBlockEntity(targetPos);
+
+        pos = ( blockState.contains(Properties.DOUBLE_BLOCK_HALF)   // compensate for double blocks (doors) 
+                && blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) ? 
+            pos.down() : pos;
+        
+        BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
+
+        if (!(player.isSneaking() && blockEntity instanceof ILockableRimaEntity lockableEntity)) {   // PASS if not lockable
+            return ActionResult.PASS; 
         }
 
-        if (!player.isSneaking()
-                || (!adminOnly && lockKey == null)) {
-            return ActionResult.PASS;
+        if (!isAdmin(stack) && lockKey == null) { // fail on non admin interaction
+            return ActionResult.FAIL;
         }
 
-        if (blockEntity instanceof LockedDoorBlockEntity door && !door.isLocked()) {
-          String lockId = stack.get(RimaDataComponentTypes.RIMA_LOCK);
-          if (lockId != null) {
-            door.setAdminLocked(adminOnly);
-            door.setKey(adminOnly ? null : lockKey);
-            stack.decrement(1);
-            player.sendMessage(Text.translatable(adminOnly ? "message.rima.door_admin_locked" : "message.rima.door_locked"), true);
-            return ActionResult.SUCCESS;
-          }
+        if (lockableEntity.isLocked()) {    // fail if already locked
+            player.sendMessage(Text.translatable("message.rima.already_locked"), true);
+            return ActionResult.FAIL;
         }
 
-        if (blockEntity instanceof ILockableContainerBlockEntity container && !container.isLocked()) {
-          String lockId = stack.get(RimaDataComponentTypes.RIMA_LOCK);
-          if (lockId != null) {
-            container.setAdminLocked(adminOnly);
-            container.setKey(adminOnly ? null : lockKey);
-            stack.decrement(1);
-            player.sendMessage(Text.translatable(adminOnly ? "message.rima.chest_admin_locked" : "message.rima.chest_locked"), true);
-            return ActionResult.SUCCESS;
-          }
-        }
-
-        if (blockEntity instanceof LockedDoorBlockEntity door && door.isLocked()) {
-            player.sendMessage(Text.translatable("message.rima.door_already_locked"), false);
-            return ActionResult.PASS;
-        }
-
-        if (blockEntity instanceof ILockableContainerBlockEntity container && container.isLocked()) {
-            player.sendMessage(Text.translatable("message.rima.chest_already_locked"), false);
-            return ActionResult.PASS;
-        }
-
+        lockableEntity.setKey(lockKey);   // lock block (admin UUID already set)
+        player.sendMessage(Text.translatable(isAdmin(stack) ? "message.rima.admin_locked" : "message.rima.locked"), true);
+        stack.decrement(1);
         return ActionResult.SUCCESS;
     }
 
