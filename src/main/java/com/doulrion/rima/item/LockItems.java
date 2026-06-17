@@ -19,7 +19,7 @@ public class LockItems {
     public static final Item ADMIN_KEY_ITEM = registerItem("admin_key", new KeyItem(new Item.Settings()));
     public static final Item LOCKPICK_ITEM = registerItem("lockpick", new Item(new Item.Settings().maxDamage(100)));
     public static final Item LOCK_ITEM = registerItem("lock", new LockItem(new Item.Settings()));
-    public static final Item ADMIN_LOCK_ITEM = registerItem("admin_lock", new LockItem(new Item.Settings(), true));
+    public static final Item ADMIN_LOCK_ITEM = registerItem("admin_lock", new LockItem(new Item.Settings()));
     public static final ItemGroup LOCK_GROUP = Registry.register(Registries.ITEM_GROUP,
             Identifier.of(Rima.MOD_ID, "lock_group"), FabricItemGroup.builder()
                     .icon(() -> new ItemStack(LOCK_ITEM))
