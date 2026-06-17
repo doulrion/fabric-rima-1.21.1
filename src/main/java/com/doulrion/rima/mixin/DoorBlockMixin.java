@@ -14,10 +14,12 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(DoorBlock.class)
@@ -29,12 +31,11 @@ public class DoorBlockMixin {
                              CallbackInfoReturnable<ActionResult> cir) {
         if (world.isClient) return;
 
-        // Doors are two blocks tall; normalise to the lower half
-        BlockPos lowerPos = isDoorUpper(state) ? pos.down() : pos;
-        BlockEntity be = world.getBlockEntity(lowerPos);
+        BlockEntity be = getLowerBlockEntity(world, pos, state);
 
-        if (!(be instanceof LockedDoorBlockEntity door)) return;
-        if (!door.isLocked()) return; // unlocked — let vanilla handle it
+        if (!IsLockedLockedDoorEntity(be)) {
+            return; // unlocked — let vanilla handle it
+        }
 
         ItemStack held = player.getMainHandStack();
 
@@ -46,7 +47,7 @@ public class DoorBlockMixin {
         // Normal key check
         if (held.isOf(LockItems.KEY_ITEM)) {
             String heldId = held.get(RimaDataComponentTypes.RIMA_LOCK);
-            if (heldId != null && door.doesUnlock(heldId)) {
+            if (heldId != null && ((LockedDoorBlockEntity) be).doesUnlock(heldId)) {
                 return;
             }
         }
@@ -59,10 +60,34 @@ public class DoorBlockMixin {
         cir.setReturnValue(ActionResult.FAIL);
     }
 
-    private boolean isDoorUpper(BlockState state) {
-    return state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)
-        && state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)
-           == net.minecraft.block.enums.DoubleBlockHalf.UPPER;
+    @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
+    private void rima$neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify,
+                              CallbackInfo cir) {
+      if (IsLockedLockedDoorEntity(getLowerBlockEntity(world, pos, state))) {
+        // Prevent BlockUpdate from opening the door if it's locked. Only Player can Unlock
+        cir.cancel();
+        return;
+      }
+      
+    }
+
+    private BlockEntity getLowerBlockEntity(World world, BlockPos pos, BlockState state) {
+        if (state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)){
+          if (state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF) == net.minecraft.block.enums.DoubleBlockHalf.UPPER) {
+            return world.getBlockEntity(pos.down());
+          } else {
+            return world.getBlockEntity(pos);
+          }
+        } else {
+            return null;
+        }
+    }
+
+    private boolean IsLockedLockedDoorEntity (BlockEntity be) {
+        if (be instanceof LockedDoorBlockEntity door) {
+            return door.isLocked();
+        }
+        return false;
     }
 
     @Unique
