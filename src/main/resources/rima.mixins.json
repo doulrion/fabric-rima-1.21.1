@@ -1,21 +1,27 @@
 {
-    "required": true,
-    "package": "com.doulrion.rima.mixin",
-    "compatibilityLevel": "JAVA_21",
-    "mixins": [
-        "ExampleMixin",
-        "GrindstoneInputSlotMixin",
-        "GrindstoneOutputSlotMixin",
-        "GrindstoneScreenHandlerMixin",
-        "LockableContainerBlockEntityMixin",
-        "LockableContainerBlockEntityMixin",
-        "DoorBlockMixin",
-        "DoorBlockEntityMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    },
-    "overwrites": {
-        "requireAnnotations": true
-    }
+  "required": true,
+  "package": "com.doulrion.rima.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ExampleMixin",
+    "GrindstoneInputSlotMixin",
+    "GrindstoneOutputSlotMixin",
+    "GrindstoneScreenHandlerMixin",
+    "LockableContainerBlockEntityMixin",
+    "DoorBlockMixin",
+    "DoorBlockEntityMixin",
+    "TrapdoorBlockMixin",
+    "TrapdoorBlockEntityMixin",
+    "LeverBlockMixin",
+    "LeverBlockEntityMixin",
+    "ButtonBlockMixin",
+    "ButtonBlockEntityMixin",
+    "BlockStateMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
 }
