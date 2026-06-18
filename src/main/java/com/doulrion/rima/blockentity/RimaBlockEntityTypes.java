@@ -28,12 +28,13 @@ public class RimaBlockEntityTypes {
     public static Class[] registrable = {LeverBlock.class, ButtonBlock.class, DoorBlock.class, TrapdoorBlock.class};
     
 
-    public static void register() {    
+    public static void register() {
  
         var arr = new Block[preRegistered.size()];
         for (var i = 0; i < preRegistered.size(); i++){
           arr[i] = preRegistered.get(i);
         }        
+        Rima.LOGGER.info("preRegistering " + preRegistered.size() + " blocks for Generic Lock Entity");
 
         LOCKED_RIMA_ENTITY = Registry.register(
              
@@ -44,6 +45,8 @@ public class RimaBlockEntityTypes {
                 arr
             ).build()
         );
+
+        arr = null;
     }
 
     public static void preregisterLockedRimaEntity(Block block){    // horribly inefficient. but it kinda works
@@ -53,7 +56,6 @@ public class RimaBlockEntityTypes {
             break;
           }
           preRegistered.add(block);        
-          Rima.LOGGER.info("preRegistered: " + block.getClass().toString());
           break;
         }
       }
