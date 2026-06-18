@@ -35,7 +35,7 @@ public class KeyItem extends Item {
     }
 
     private boolean canUnlock(ILockableRimaEntity lockableEntity, ItemStack stack) {
-        return isAdmin(stack) || (getLockKey(stack).equals(lockableEntity.getKey()) && !lockableEntity.isAdminLocked());
+        return isAdmin(stack) || ((getLockKey(stack) instanceof String key) && key.equals(lockableEntity.getKey()) && !lockableEntity.isAdminLocked());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class KeyItem extends Item {
         super.appendTooltip(stack, context, tooltip, type);
 
         String lockKey = getLockKey(stack);
-        if (isAdmin(stack) || getLockKey(stack) == null) {
+        if (isAdmin(stack) || lockKey == null) {
             return;
         }
 
