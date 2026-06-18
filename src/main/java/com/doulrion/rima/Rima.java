@@ -38,17 +38,15 @@ public class Rima implements ModInitializer {
 
     private void registerEvents() {
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
+          if (state.contains(Properties.DOUBLE_BLOCK_HALF) &&            // normalize to lower block.
+                  state.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER){
+                    blockEntity = world.getBlockEntity(pos.down());  
+                  }
 
-          var blockState = world.getBlockState(pos);
-          if (blockState.getBlock() instanceof DoorBlock) {
-              var targetPos = blockState.contains(Properties.DOUBLE_BLOCK_HALF) &&
-                      blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER
-                      ? pos.down() : pos;
-              blockEntity = world.getBlockEntity(targetPos);
-          } else if (blockEntity instanceof ILockableRimaEntity rimaEntity && rimaEntity.isLocked()) {
+          if (blockEntity instanceof ILockableRimaEntity rimaEntity && rimaEntity.isLocked()) {
               player.sendMessage(Text.translatable("message.rima.not_breakable"), true);
               return false; // cancels the break
-           }
+          }
 
           return true;
         });

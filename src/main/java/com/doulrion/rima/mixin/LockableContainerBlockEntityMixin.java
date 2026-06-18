@@ -11,8 +11,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.block.enums.ChestType;
+import net.minecraft.util.math.Direction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.state.property.Properties;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.doulrion.rima.Rima;
 import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
 import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
@@ -32,36 +36,118 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
     @Unique
     private String lockKey = null;
 
-    // @Unique
-    // private boolean rima_admin_lock;
-
-    public void setKey(String key) {
+    @Unique
+    public void setKey(String key, boolean skipDblChestCheck) {
+      if (skipDblChestCheck){
         lockKey = key;
         ((LockableContainerBlockEntity) (Object) this).markDirty();
+      } else {
+        ((LockableContainerBlockEntityMixin) (Object) getLockedEntity()).setKey(key, true);   // does this actually work????
+      }
     }
 
-    public String getKey() {
+    @Unique
+    public void setKey(String key) {
+      setKey(key, false);
+    }
+
+    @Unique
+    public String getKey(boolean skipDblChestCheck){
+      if (skipDblChestCheck){
         return lockKey;
+      } else {
+        return ((LockableContainerBlockEntityMixin) (Object) getLockedEntity()).getKey(true);   // does this actually work????
+      }
     }
 
+    @Unique
+    public String getKey() {
+      return getKey(false);
+    }
+
+    @Unique
     public void setAdminLocked(boolean adminLocked) {
-        lockKey = LockedRimaBlockEntity.adminUUID;
-        ((LockableContainerBlockEntity) (Object) this).markDirty();
+      setKey(LockedRimaBlockEntity.adminUUID);
     }
 
+    @Unique
+    public boolean isAdminLocked(boolean skipDblChestCheck) {
+      return getKey(skipDblChestCheck) == LockedRimaBlockEntity.adminUUID;
+    }
+
+    @Unique
     public boolean isAdminLocked() {
-        return lockKey == LockedRimaBlockEntity.adminUUID;
+      return isAdminLocked(false);
     }
 
-    // public void doOpen()
+    @Unique
+    public boolean isLocked(boolean skipDblChestCheck) {
+      return isAdminLocked(skipDblChestCheck) || getKey(skipDblChestCheck) != null;
+    }
 
+    @Unique
     public boolean isLocked() {
-        return isAdminLocked() || lockKey != null;
+      return isLocked(false);
     }
 
+    @Unique
     public boolean doesUnlock(String key) {
-        return Objects.equals(lockKey, key);
+      return Objects.equals(getKey(), key);
     }
+
+    @Unique
+    private LockableContainerBlockEntity getLockedEntity(){    
+      var this_ = (LockableContainerBlockEntity) (Object) this; 
+      if (lockKey != null){   // already on locked entity. return this
+        return this_;
+      }
+      var blockState = this_.getCachedState();
+      if (!blockState.contains(Properties.CHEST_TYPE)){   // no chest type -> no double chest
+        return this_;
+      }
+      var chestside = blockState.get(Properties.CHEST_TYPE);
+      if (chestside == ChestType.SINGLE){   // no need to continue if single
+        return this_;
+      }
+      
+		  //"facing", Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN
+      var pos = this_.getPos();
+      var offset = (chestside == ChestType.LEFT) ? -1 : 1;  // get positive or negative offset by left or right side
+      switch (blockState.get(Properties.HORIZONTAL_FACING)) {    // get position by facing
+        case Direction.NORTH:
+          pos = pos.west(offset);
+          break;
+      
+        case Direction.EAST:
+          pos = pos.north(offset);
+          break;
+      
+        case Direction.SOUTH:
+          pos = pos.east(offset);
+          break;
+      
+        case Direction.WEST:
+          pos = pos.south(offset);
+          break;
+
+        default:
+          Rima.LOGGER.warn("Found unknown chest facing at " + pos.toString() + ". This is unhandled behavior! Aborting double chest search.");
+          return this_;
+        
+      }
+
+      if (!(this_.getWorld().getBlockEntity(pos) instanceof LockableContainerBlockEntity newEntity)){   // check if found entity is matching
+        Rima.LOGGER.error("Double chest search returned incompatible blockentity at " + pos.toString() + ".");
+        return this_; // fallback to previous
+      }
+      
+      if (!((LockableContainerBlockEntityMixin) (Object) newEntity).isLocked(true)){    // only return new entity if locked
+        return this_;
+      }
+
+      return newEntity;
+    }
+
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(BlockEntityType<?> type, BlockPos pos, BlockState state, CallbackInfo ci) {
