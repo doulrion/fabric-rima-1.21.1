@@ -1,20 +1,22 @@
 package com.doulrion.rima.item.custom;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.item.LockItems;
 import com.doulrion.rima.component.RimaLockState;
+import com.doulrion.rima.component.RimaHelper;
 
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.ActionResult;
 import net.minecraft.world.World;
 import net.minecraft.world.GameMode;
@@ -72,7 +74,42 @@ public class LockItem extends Item {
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-      return RimaLockState.useOnBlockLock(context);
+      PlayerEntity player = context.getPlayer();
+      if (!player.isSneaking()){
+        return ActionResult.PASS;
+      }
+      ItemStack stack = context.getStack();
+      GameMode gameMode = RimaHelper.getPlayerGamemode(player);
+      World world = context.getWorld();
+      BlockPos pos = RimaHelper.normalizeBlockPos(context.getWorld().getBlockState(context.getBlockPos()), context.getBlockPos());
+
+      if (!(world.getBlockEntity(pos) instanceof ILockableRimaEntity le)){
+        return ActionResult.PASS;
+      }
+      
+      if (le.getLockState().isLocked()){
+        RimaHelper.Messages.messageAlreadyLocked(player);
+        return ActionResult.SUCCESS;
+      }
+
+      RimaLockState heldLockState = RimaLockState.fromLockItem(stack);
+
+      if (!heldLockState.isGameModeAdd(gameMode)){
+        RimaHelper.Messages.messageLockAdd_not_allowed(player);
+        return ActionResult.SUCCESS;
+      }
+
+      if (!heldLockState.isLocked()){
+        RimaHelper.Messages.messageLockInvalid(player);
+        return ActionResult.SUCCESS;
+      }
+      
+      le.setLockState(heldLockState.clone());    // simply clone lockstate to lock.
+      
+      RimaHelper.Messages.messageLockAdded(player);
+      stack.decrement(1);
+
+      return ActionResult.SUCCESS;
     }
 
 }

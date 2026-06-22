@@ -1,6 +1,6 @@
 package com.doulrion.rima.mixin;
 
-import com.doulrion.rima.component.RimaLockState;
+import com.doulrion.rima.component.RimaGenericBlockLockHelper;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ButtonBlock;
@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ButtonBlock.class)
 public class ButtonBlockMixin {
 
-    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
-    private void rima$onUse(BlockState state, World world, BlockPos pos,
-                             PlayerEntity player, BlockHitResult hit,
-                             CallbackInfoReturnable<ActionResult> cir) {
-      RimaLockState.onUseGenericBlock(state, world, pos, player, hit, cir);
-    }
+  @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
+  private void rima$onUse(BlockState state, World world, BlockPos pos,
+                           PlayerEntity player, BlockHitResult hit,
+                           CallbackInfoReturnable<ActionResult> cir) {
+    RimaGenericBlockLockHelper.onUseGenericBlock(state, world, pos, player, hit, cir);
+  }
 
 }

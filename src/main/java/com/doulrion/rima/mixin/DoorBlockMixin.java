@@ -1,6 +1,7 @@
 package com.doulrion.rima.mixin;
 
-import com.doulrion.rima.component.RimaLockState;
+import com.doulrion.rima.component.RimaGenericBlockLockHelper;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.entity.player.PlayerEntity;
@@ -23,15 +24,15 @@ public class DoorBlockMixin {
   private void rima$onUse(BlockState state, World world, BlockPos pos,
                            PlayerEntity player, BlockHitResult hit,
                            CallbackInfoReturnable<ActionResult> cir) {
-
-      RimaLockState.onUseGenericBlock(state, world, pos, player, hit, cir);
-
+    RimaGenericBlockLockHelper.onUseGenericBlock(state, world, pos, player, hit, cir);
   }
 
   @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
   private void rima$neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify,
                             CallbackInfo cir) {
-    RimaLockState.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify, cir);
-    
+    if (RimaGenericBlockLockHelper.neighborUpdate(state, world, pos)){
+      cir.cancel();
+    }
   }
+  
 }
