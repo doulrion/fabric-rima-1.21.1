@@ -5,6 +5,8 @@
   "item.rima.lock": "Lock",
   "item.rima.dungeon_lock": "Dungeon Lock",
   "item.rima.pickable_dungeon_lock": "Pickable Dungeon Lock",
+  "item.rima.diamond_lock": "Diamond Lock",
+  "item.rima.netherite_lock": "Netherite Lock",
   "item.rima.admin_lock": "Admin Lock",
   "itemGroup.rima.lock_group": "Locks",
   "tooltip.rima.lock_uuid": "Lock ID: %s",
