@@ -2,7 +2,6 @@ package com.doulrion.rima;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.DoorBlock;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
@@ -13,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.doulrion.rima.item.LockItems;
 import com.doulrion.rima.blockentity.RimaBlockEntityTypes;
 import com.doulrion.rima.component.RimaDataComponentTypes;
+import com.doulrion.rima.component.RimaLockState;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 
 public class Rima implements ModInitializer {
@@ -30,25 +30,22 @@ public class Rima implements ModInitializer {
         // Proceed with mild caution.
 
         LOGGER.info("Rima has been initialized!");
-        RimaBlockEntityTypes.register();
         RimaDataComponentTypes.registerDataComponentTypes();
+        RimaBlockEntityTypes.register();
         LockItems.init();
         registerEvents();
     }
 
     private void registerEvents() {
-        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
-          if (state.contains(Properties.DOUBLE_BLOCK_HALF) &&            // normalize to lower block.
-                  state.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER){
-                    blockEntity = world.getBlockEntity(pos.down());  
-                  }
+      PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
 
-          if (blockEntity instanceof ILockableRimaEntity rimaEntity && rimaEntity.isLocked()) {
-              player.sendMessage(Text.translatable("message.rima.not_breakable"), true);
-              return false; // cancels the break
-          }
+        if (world.getBlockEntity(RimaLockState.Helper.normalizeBlockPos(state, world, pos)) instanceof ILockableRimaEntity rimaEntity 
+          && rimaEntity.getLockState().isLocked()) {
+            player.sendMessage(Text.translatable("message.rima.not_breakable"), true);
+            return false; // cancels the break
+        }
 
-          return true;
-        });
+        return true;
+      });
     }
 }
