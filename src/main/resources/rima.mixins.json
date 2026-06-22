@@ -16,7 +16,8 @@
     "LeverBlockEntityMixin",
     "ButtonBlockMixin",
     "ButtonBlockEntityMixin",
-    "BlockStateMixin"
+    "BlockStateMixin",
+    "AbstractBlockStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1
