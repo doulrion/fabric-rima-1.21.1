@@ -32,7 +32,7 @@ public abstract class GrindstoneScreenHandlerMixin {
             cir.setReturnValue(GrindstoneLockHelper.createLockFromLockResult(firstInput,secondInput.getItem()));
         }
         else if (GrindstoneLockHelper.isLockIdAssignment(firstInput, secondInput)) {
-            cir.setReturnValue(GrindstoneLockHelper.createLockFromIdAssignmentResult(firstInput,secondInput.getItem()));
+            cir.setReturnValue(GrindstoneLockHelper.createLockFromIdAssignmentResult(firstInput,secondInput));
         }else{
             return; // continue with vanilla output logic, which will handle non-lock/key inputs as normal
         }

@@ -3,8 +3,7 @@ package com.doulrion.rima.item;
 import java.util.UUID;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.item.custom.KeyItem;
-import com.doulrion.rima.item.custom.LockItem;
+import com.doulrion.rima.component.RimaLockState;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Item;
@@ -35,7 +34,7 @@ public final class GrindstoneLockHelper {
     }
 
     public static boolean isLockIdAssignment(ItemStack firstInput, ItemStack secondInput){
-      return isLock(firstInput) && secondInput.isEmpty();
+      return isLock(secondInput) && firstInput.isEmpty();
     }
 
     public static ItemStack createKeyFromLockResult(ItemStack firstInput, Item secondInput) {
@@ -80,11 +79,11 @@ public final class GrindstoneLockHelper {
         return result;
     }
 
-    public static ItemStack createLockFromIdAssignmentResult(ItemStack firstInput, Item secondInput) {
-      if(!isLock(firstInput))
+    public static ItemStack createLockFromIdAssignmentResult(ItemStack firstInput, ItemStack secondInput) {
+      if(!isLock(secondInput))
           return ItemStack.EMPTY;
 
-      ItemStack result = new ItemStack(firstInput.getItem());
+      ItemStack result = new ItemStack(secondInput.getItem());
       result.set(RimaDataComponentTypes.RIMA_LOCK, UUID.randomUUID().toString());
       return result;
     }
@@ -104,9 +103,9 @@ public final class GrindstoneLockHelper {
     }
 
     public static boolean isKey(ItemStack stack) {
-        return stack.getItem().getClass().isAssignableFrom(KeyItem.class) && !stack.isOf(LockItems.ADMIN_KEY_ITEM);
+        return RimaLockState.Helper.isKeyItem(stack) && !stack.isOf(LockItems.ADMIN_KEY_ITEM);
     }    
     public static boolean isLock(ItemStack stack) {
-        return stack.getItem().getClass().isAssignableFrom(LockItem.class) && !stack.isOf(LockItems.ADMIN_LOCK_ITEM);
+        return RimaLockState.Helper.isLockItem(stack) && !stack.isOf(LockItems.ADMIN_LOCK_ITEM);
     }
 }
