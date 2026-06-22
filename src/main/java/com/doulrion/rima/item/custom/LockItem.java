@@ -4,10 +4,13 @@ import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.item.LockItems;
+import com.doulrion.rima.component.RimaLockState;
 
 import java.util.List;
+import java.util.UUID;
 
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.StructureBlockBlockEntity.Action;
 import net.minecraft.state.property.Properties;
 import net.minecraft.block.enums.DoubleBlockHalf;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,17 +21,29 @@ import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.GameMode;
 
 public class LockItem extends Item {
+    public final float defaultPickRate;
+    public final GameMode[] defaultGameModeAdd;
+    public final GameMode[] defaultGameModeRemove;
+    public final GameMode[] defaultGameModeUse;
+    public final GameMode[] defaultGameModePick;
+    public final GameMode[] defaultGameModeBypassUse;
 
-    public LockItem(Settings settings) {
+    public LockItem(Settings settings, float pickRate, GameMode[] Add, GameMode[] Remove, GameMode[] Use, GameMode[] Pick, GameMode[] BypassUse) {
         super(settings);
+        defaultPickRate = pickRate;
+        defaultGameModeAdd = Add;
+        defaultGameModeRemove = Remove;
+        defaultGameModeUse = Use;
+        defaultGameModePick = Pick;
+        defaultGameModeBypassUse = BypassUse;
     }
 
     public String getLockKey(ItemStack stack) {
-      return isAdmin(stack) ? LockedRimaBlockEntity.adminUUID : stack.get(RimaDataComponentTypes.RIMA_LOCK);
+      return stack.contains(RimaDataComponentTypes.RIMA_LOCK) ? stack.get(RimaDataComponentTypes.RIMA_LOCK) : null;
     }
 
     public boolean isAdmin(ItemStack stack) {
@@ -45,7 +60,7 @@ public class LockItem extends Item {
         if (stack.get(RimaDataComponentTypes.RIMA_LOCK) != null) {
             return;
         }
-        String uniqueID = java.util.UUID.randomUUID().toString();
+        String uniqueID = UUID.randomUUID().toString();
         stack.set(RimaDataComponentTypes.RIMA_LOCK, uniqueID);
         super.onCraft(stack, world);
     }
@@ -55,50 +70,14 @@ public class LockItem extends Item {
         super.appendTooltip(stack, context, tooltip, type);
 
         String lockKey = getLockKey(stack);
-        if (isAdmin(stack) || getLockKey(stack) == null) {
-            return;
+        if (lockKey != null) {
+          tooltip.add(Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY));
         }
-
-        tooltip.add(Text.translatable("tooltip.rima.lock_uuid", lockKey).formatted(Formatting.GRAY));
     }
 
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
-        ItemStack stack = context.getStack();
-        String lockKey = getLockKey(stack);
-        PlayerEntity player = context.getPlayer();
-        BlockPos pos = context.getBlockPos();
-
-        if (player == null
-                || pos == null) {
-            return ActionResult.PASS;
-        }
-
-        var blockState = context.getWorld().getBlockState(pos);
-
-        pos = ( blockState.contains(Properties.DOUBLE_BLOCK_HALF)   // compensate for double blocks (doors) 
-                && blockState.get(Properties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER) ? 
-            pos.down() : pos;
-        
-        BlockEntity blockEntity = context.getWorld().getBlockEntity(pos);
-
-        if (!(player.isSneaking() && blockEntity instanceof ILockableRimaEntity lockableEntity)) {   // PASS if not lockable
-            return ActionResult.PASS; 
-        }
-
-        if (!isAdmin(stack) && lockKey == null) { // fail on non admin interaction
-            return ActionResult.FAIL;
-        }
-
-        if (lockableEntity.isLocked()) {    // fail if already locked
-            player.sendMessage(Text.translatable("message.rima.already_locked"), true);
-            return ActionResult.FAIL;
-        }
-
-        lockableEntity.setKey(lockKey);   // lock block (admin UUID already set)
-        player.sendMessage(Text.translatable(isAdmin(stack) ? "message.rima.admin_locked" : "message.rima.locked"), true);
-        stack.decrement(1);
-        return ActionResult.SUCCESS;
+      return RimaLockState.useOnBlockLock(context);
     }
 
 }
