@@ -3,7 +3,7 @@ package com.doulrion.rima.item;
 import java.util.UUID;
 
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.component.RimaLockState;
+import com.doulrion.rima.component.RimaHelper;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Item;
@@ -103,9 +103,9 @@ public final class GrindstoneLockHelper {
     }
 
     public static boolean isKey(ItemStack stack) {
-        return RimaLockState.Helper.isKeyItem(stack) && !stack.isOf(LockItems.ADMIN_KEY_ITEM);
+        return RimaHelper.isKeyItem(stack) && !stack.isOf(LockItems.ADMIN_KEY_ITEM);
     }    
     public static boolean isLock(ItemStack stack) {
-        return RimaLockState.Helper.isLockItem(stack) && !stack.isOf(LockItems.ADMIN_LOCK_ITEM);
+        return RimaHelper.isLockItem(stack) && !stack.isOf(LockItems.ADMIN_LOCK_ITEM);
     }
 }

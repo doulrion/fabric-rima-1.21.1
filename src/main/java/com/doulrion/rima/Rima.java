@@ -2,8 +2,6 @@ package com.doulrion.rima;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 
 import org.slf4j.Logger;
@@ -12,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.doulrion.rima.item.LockItems;
 import com.doulrion.rima.blockentity.RimaBlockEntityTypes;
 import com.doulrion.rima.component.RimaDataComponentTypes;
-import com.doulrion.rima.component.RimaLockState;
+import com.doulrion.rima.component.RimaHelper;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 
 public class Rima implements ModInitializer {
@@ -38,13 +36,11 @@ public class Rima implements ModInitializer {
 
     private void registerEvents() {
       PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
-
-        if (world.getBlockEntity(RimaLockState.Helper.normalizeBlockPos(state, pos)) instanceof ILockableRimaEntity rimaEntity 
+        if (world.getBlockEntity(RimaHelper.normalizeBlockPos(state, pos)) instanceof ILockableRimaEntity rimaEntity 
           && rimaEntity.getLockState().isLocked()) {
-            player.sendMessage(Text.translatable("message.rima.not_breakable"), true);
+            RimaHelper.Messages.messageNotBreakable(player);
             return false; // cancels the break
         }
-
         return true;
       });
     }

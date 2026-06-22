@@ -1,6 +1,7 @@
 package com.doulrion.rima.mixin;
 
 import com.doulrion.rima.component.RimaLockState;
+import com.doulrion.rima.component.RimaHelper;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.Rima;
 
@@ -20,7 +21,7 @@ public class AbstractBlockStateMixin {
 
     @Inject(method = "getHardness", at = @At("RETURN"), cancellable = true)
     private void getHardness(BlockView world, BlockPos pos, CallbackInfoReturnable<Float> cir){
-      BlockEntity be = world.getBlockEntity(RimaLockState.Helper.normalizeBlockPos(world.getBlockState(pos), pos));
+      BlockEntity be = world.getBlockEntity(RimaHelper.normalizeBlockPos(world.getBlockState(pos), pos));
       if (!(be instanceof ILockableRimaEntity le)){
         Rima.LOGGER.info("abort. not lockable instance");
         return;
