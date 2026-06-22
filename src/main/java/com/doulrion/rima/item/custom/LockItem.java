@@ -9,11 +9,6 @@ import com.doulrion.rima.component.RimaLockState;
 import java.util.List;
 import java.util.UUID;
 
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.StructureBlockBlockEntity.Action;
-import net.minecraft.state.property.Properties;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
