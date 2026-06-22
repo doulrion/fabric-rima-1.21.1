@@ -7,7 +7,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.doulrion.rima.Rima;
 import com.doulrion.rima.item.LockItems;
-import com.doulrion.rima.item.custom.KeyItem;
 import com.doulrion.rima.item.custom.LockItem;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 
@@ -49,15 +48,18 @@ public class RimaLockState extends Object {
     public GameModes() {
       super(0);
     }
+
     public GameModes(int initialCapacity){
       super(initialCapacity);
     }
+
     public GameModes(GameMode[] arr){
       super(arr.length);
       for (GameMode mode : arr){
         this.add(mode);
       }
     }
+
     public GameModes clone(){
       GameModes modes = new GameModes(this.size());
       for (GameMode mode : this){
@@ -65,6 +67,7 @@ public class RimaLockState extends Object {
       }
       return modes;
     }
+    
     public String toFormatString(String template){
       return template.replace("s", contains(GameMode.SURVIVAL) ? "X" : "_")
         .replace("a", contains(GameMode.ADVENTURE) ? "X" : "_")
@@ -100,19 +103,18 @@ public class RimaLockState extends Object {
     }
 
     public static boolean isKeyItem(ItemStack stack){
-      Rima.LOGGER.info("nuttne" + stack.getName());
-      return stack.getItem().getClass().isAssignableFrom(KeyItem.class) && !stack.isOf(LockItems.LOCKPICK_ITEM);  // idk why. give up and just check for lockpick :P
+      return stack.isOf(LockItems.KEY_ITEM) || stack.isOf(LockItems.ADMIN_KEY_ITEM);
     }  
     
     public static boolean isLockItem(ItemStack stack){
-      return stack.getItem().getClass().isAssignableFrom(LockItem.class) && !stack.isOf(LockItems.LOCKPICK_ITEM);  // idk why. give up and just check for lockpick :P
+      return LockItems.LockItems.contains(stack.getItem());
     }
 
     public static boolean isPickItem(ItemStack stack){
       return stack.isOf(LockItems.LOCKPICK_ITEM);
     }
 
-    public static BlockPos normalizeBlockPos(BlockState state, World world, BlockPos pos){
+    public static BlockPos normalizeBlockPos(BlockState state, BlockPos pos){
       if (state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF) && 
         state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF) == net.minecraft.block.enums.DoubleBlockHalf.UPPER) {
           return pos.down();
@@ -123,11 +125,11 @@ public class RimaLockState extends Object {
   }
 
   private UUID key = null;
-  private float pickRate = 0;
-  private GameModes GameModeAdd       = null;
-  private GameModes GameModeRemove    = null;
-  private GameModes GameModeUse       = null;
-  private GameModes GameModePick      = null;
+  private float pickRate = 0F;
+  private GameModes GameModeAdd = null;
+  private GameModes GameModeRemove = null;
+  private GameModes GameModeUse = null;
+  private GameModes GameModePick = null;
   private GameModes GameModeBypassUse = null;
   private Item originItem = null;
 
@@ -138,11 +140,11 @@ public class RimaLockState extends Object {
 
   public RimaLockState(){
     super();
-    GameModeAdd       = new GameModes();
-    GameModeRemove    = new GameModes();
-    GameModeUse       = new GameModes();
-    GameModePick      = new GameModes();
-    GameModeBypassUse = new GameModes();
+    this.GameModeAdd        = new GameModes();
+    this.GameModeRemove     = new GameModes();
+    this.GameModeUse        = new GameModes();
+    this.GameModePick       = new GameModes();
+    this.GameModeBypassUse  = new GameModes();
   }
 
   public RimaLockState(UUID key, float pickRate, Item originItem, RimaLockState.GameModes Add, RimaLockState.GameModes Remove, RimaLockState.GameModes Use, RimaLockState.GameModes Pick, RimaLockState.GameModes BypassUse){
@@ -150,39 +152,30 @@ public class RimaLockState extends Object {
     this.key = key;
     this.pickRate = pickRate;
     this.originItem = originItem;
-    this.GameModeAdd = Add;
-    this.GameModeAdd = Remove;
-    this.GameModeAdd = Use;
-    this.GameModeAdd = Pick;
-    this.GameModeAdd = BypassUse;
+    this.GameModeAdd = Add == null ? new GameModes() : Add;
+    this.GameModeRemove = Remove == null ? new GameModes() : Remove;
+    this.GameModeUse = Use == null ? new GameModes() : Use;
+    this.GameModePick = Pick == null ? new GameModes() : Pick;
+    this.GameModeBypassUse = BypassUse == null ? new GameModes() : BypassUse;
   }
 
   public RimaLockState(UUID key, float pickRate, Item originItem, GameMode[] Add, GameMode[] Remove, GameMode[] Use, GameMode[] Pick, GameMode[] BypassUse){
     super();
-    this.key = key;
-    this.pickRate = pickRate;
-    this.originItem = originItem;
+    this.key                = key;
+    this.pickRate           = pickRate;
+    this.originItem         = originItem;
     this.GameModeAdd        = new GameModes(Add);
     this.GameModeRemove     = new GameModes(Remove);
     this.GameModeUse        = new GameModes(Use);
     this.GameModePick       = new GameModes(Pick);
     this.GameModeBypassUse  = new GameModes(BypassUse);
   }
-
-  public RimaLockState(RimaLockState original){
-    super();
-    this.key = original.key;
-    this.pickRate = original.pickRate;
-    this.originItem = original.originItem;
-    this.GameModeAdd = original.GameModeAdd == null ? new GameModes() : original.GameModeAdd.clone();
-    this.GameModeRemove = original.GameModeRemove == null ? new GameModes() : original.GameModeRemove.clone();
-    this.GameModeUse = original.GameModeUse == null ? new GameModes() : original.GameModeUse.clone();
-    this.GameModePick = original.GameModePick == null ? new GameModes() : original.GameModePick.clone();
-    this.GameModeBypassUse = original.GameModeBypassUse == null ? new GameModes() : original.GameModeBypassUse.clone();
-  }
   
   public static RimaLockState fromLockItem(ItemStack Item){   // get state from Item
     UUID itemKey = Helper.getKeyFromStack(Item);
+    if (itemKey == null && Item.isOf(LockItems.ADMIN_LOCK_ITEM)){
+      itemKey = adminUUID;
+    }
     Item item_ = Item.getItem();
     if (LockItems.LockItems.contains(item_) && item_ instanceof LockItem lockItem){
       return new RimaLockState(itemKey, 
@@ -201,7 +194,15 @@ public class RimaLockState extends Object {
   }
 
   public RimaLockState clone(){
-    return new RimaLockState(this);
+    return new RimaLockState(this.key, 
+      this.pickRate,
+      this.originItem,
+      this.GameModeAdd.clone(),
+      this.GameModeRemove.clone(),
+      this.GameModeUse.clone(),
+      this.GameModePick.clone(),
+      this.GameModeBypassUse.clone()
+    );
   }
 
 
@@ -235,9 +236,9 @@ public class RimaLockState extends Object {
   
   public void saveToEntityNbt(NbtCompound nbt){
     if (key != null) {
-        nbt.putUuid(RIMA_NBT_KEY, key);
+      nbt.putUuid(RIMA_NBT_KEY, key);
     } else {
-        nbt.remove(RIMA_NBT_KEY);
+      nbt.remove(RIMA_NBT_KEY);
     }
     nbt.putFloat(RIMA_NBT_PICKRATE, pickRate);
     writeGameModeList(nbt, GameModeAdd, RIMA_NBT_CANADDLOCK);
@@ -341,6 +342,13 @@ public class RimaLockState extends Object {
     return droppedLock;
   }
 
+  public boolean isPlayerRemovable(PlayerEntity player){
+    if (player == null){
+      return GameModeRemove.contains(GameMode.SURVIVAL); // assume survival
+    } else {
+      return GameModeRemove.contains(Helper.getPlayerGamemode(player));
+    }
+  }
 
 ////////////////////////////////////
 //        Action Handling         //
@@ -406,7 +414,7 @@ public class RimaLockState extends Object {
     ItemStack stack = context.getStack();
     GameMode gameMode = Helper.getPlayerGamemode(player);
     World world = context.getWorld();
-    BlockPos pos = Helper.normalizeBlockPos(context.getWorld().getBlockState(context.getBlockPos()), world, context.getBlockPos());
+    BlockPos pos = Helper.normalizeBlockPos(context.getWorld().getBlockState(context.getBlockPos()), context.getBlockPos());
 
     if (!(world.getBlockEntity(pos) instanceof ILockableRimaEntity le)){
       return ActionResult.PASS;
@@ -431,7 +439,7 @@ public class RimaLockState extends Object {
     ItemStack stack = context.getStack();
     GameMode gameMode = Helper.getPlayerGamemode(player);
     World world = context.getWorld();
-    BlockPos pos = Helper.normalizeBlockPos(context.getWorld().getBlockState(context.getBlockPos()), world, context.getBlockPos());
+    BlockPos pos = Helper.normalizeBlockPos(context.getWorld().getBlockState(context.getBlockPos()), context.getBlockPos());
 
     if (!(world.getBlockEntity(pos) instanceof ILockableRimaEntity le)){
       return ActionResult.PASS;
@@ -508,7 +516,7 @@ public class RimaLockState extends Object {
   public static void onUseGenericBlock(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
     if (world.isClient) return;   // do not handle on client.
 
-    pos = Helper.normalizeBlockPos(state, world, pos);
+    pos = Helper.normalizeBlockPos(state, pos);
       
     BlockEntity be = world.getBlockEntity(pos);
 
@@ -553,7 +561,11 @@ public class RimaLockState extends Object {
 
 // neighborUpdate for GenericBlock
   public static void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify, CallbackInfo cir){
-    if (world.getBlockEntity(Helper.normalizeBlockPos(state, world, sourcePos)) instanceof ILockableRimaEntity doorEntity && doorEntity.getLockState().isLocked()) {
+    if (world.isClient) return;   // do not handle on client.
+    if (!(world.getBlockEntity(Helper.normalizeBlockPos(state, pos)) instanceof ILockableRimaEntity doorEntity)){
+      return;
+    }
+    if (doorEntity.getLockState().isLocked()) {
       // Prevent BlockUpdate from opening the door if it's locked. Only Player can Unlock
       cir.cancel();
       return;
