@@ -1,20 +1,11 @@
 package com.doulrion.rima.mixin;
 
-import java.util.Objects;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.util.math.Direction;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.state.property.Properties;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,80 +16,48 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.doulrion.rima.Rima;
-import com.doulrion.rima.blockentity.LockedRimaBlockEntity;
-import com.doulrion.rima.component.RimaDataComponentTypes;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
-import com.doulrion.rima.item.LockItems;
+import com.doulrion.rima.component.RimaLockState;
 
 @Mixin(LockableContainerBlockEntity.class)
 public abstract class LockableContainerBlockEntityMixin implements ILockableRimaEntity {
 
     @Unique
-    private String lockKey = null;
+    private RimaLockState lockState = new RimaLockState();
 
     @Unique
-    public void setKey(String key, boolean skipDblChestCheck) {
+    public void setLockState(RimaLockState state, boolean skipDblChestCheck) {
       if (skipDblChestCheck){
-        lockKey = key;
+        lockState = state;
         ((LockableContainerBlockEntity) (Object) this).markDirty();
       } else {
-        ((LockableContainerBlockEntityMixin) (Object) getLockedEntity()).setKey(key, true);   // does this actually work????
+        ((LockableContainerBlockEntityMixin) (Object) getLockedEntity()).setLockState(state, true);   // does this actually work????
       }
+    }   
+    
+    @Unique
+    public void setLockState(RimaLockState state) {
+      setLockState(state, false);   // does this actually work????
     }
 
-    @Unique
-    public void setKey(String key) {
-      setKey(key, false);
-    }
-
-    @Unique
-    public String getKey(boolean skipDblChestCheck){
+    @Unique 
+    public RimaLockState getLockState(boolean skipDblChestCheck){
       if (skipDblChestCheck){
-        return lockKey;
+        return lockState;
       } else {
-        return ((LockableContainerBlockEntityMixin) (Object) getLockedEntity()).getKey(true);   // does this actually work????
+        return ((LockableContainerBlockEntityMixin) (Object) getLockedEntity()).getLockState(true);   // does this actually work????
       }
-    }
+    };
 
-    @Unique
-    public String getKey() {
-      return getKey(false);
-    }
-
-    @Unique
-    public void setAdminLocked(boolean adminLocked) {
-      setKey(LockedRimaBlockEntity.adminUUID);
-    }
-
-    @Unique
-    public boolean isAdminLocked(boolean skipDblChestCheck) {
-      return getKey(skipDblChestCheck) == LockedRimaBlockEntity.adminUUID;
-    }
-
-    @Unique
-    public boolean isAdminLocked() {
-      return isAdminLocked(false);
-    }
-
-    @Unique
-    public boolean isLocked(boolean skipDblChestCheck) {
-      return isAdminLocked(skipDblChestCheck) || getKey(skipDblChestCheck) != null;
-    }
-
-    @Unique
-    public boolean isLocked() {
-      return isLocked(false);
-    }
-
-    @Unique
-    public boolean doesUnlock(String key) {
-      return Objects.equals(getKey(), key);
-    }
+    @Unique 
+    public RimaLockState getLockState(){
+      return getLockState(false);
+    };
 
     @Unique
     private LockableContainerBlockEntity getLockedEntity(){    
       var this_ = (LockableContainerBlockEntity) (Object) this; 
-      if (lockKey != null){   // already on locked entity. return this
+      if (lockState != null && lockState.isLocked()){   // already on locked entity. return this
         return this_;
       }
       var blockState = this_.getCachedState();
@@ -141,76 +100,34 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
         return this_; // fallback to previous
       }
       
-      if (!((LockableContainerBlockEntityMixin) (Object) newEntity).isLocked(true)){    // only return new entity if locked
+      RimaLockState lockState_ = ((LockableContainerBlockEntityMixin) (Object) newEntity).getLockState(true);
+      if (!(lockState_ != null && lockState_.isLocked())){    // only return new entity if locked
         return this_;
       }
 
       return newEntity;
     }
 
-
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(BlockEntityType<?> type, BlockPos pos, BlockState state, CallbackInfo ci) {
-        this.lockKey = null;
-    }
-
     @Inject(method = "readNbt", at = @At(value = "RETURN"))
     private void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        if (nbt.contains(LockedRimaBlockEntity.RIMA_KEY_NBT, NbtElement.STRING_TYPE)) {
-            this.lockKey = nbt.getString(LockedRimaBlockEntity.RIMA_KEY_NBT);
-        } else {
-            this.lockKey = null;
-        }
+      lockState.loadFromEntityNbt(nbt);
     }
 
     @Inject(method = "writeNbt", at = @At(value = "RETURN"))
     private void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup, CallbackInfo ci) {
-        if (lockKey != null) {
-            nbt.putString(LockedRimaBlockEntity.RIMA_KEY_NBT, lockKey);
-        } else {
-            nbt.remove(LockedRimaBlockEntity.RIMA_KEY_NBT);
-        }
+      lockState.saveToEntityNbt(nbt);
     }
+
 
     @Inject(method = "checkUnlocked", at = @At("RETURN"), cancellable = true)
+
     public void checkUnlocked(PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
+      
+      if (!cir.getReturnValue()) {
+          return; // do not handle when default behavior decides entity is locked
+      }
 
-        if (!cir.getReturnValue()) {
-            return; // do not handle when default behavior decides entity is locked
-        }
-
-        ItemStack heldStack = player.getMainHandStack();
-        
-        if (isLocked()) {
-            if (player.isCreative()
-                    || player.isSpectator()
-                    || heldStack.isOf(LockItems.ADMIN_KEY_ITEM)
-                    || (!isAdminLocked() && canLockpick(player, heldStack))
-                    || (!isAdminLocked()
-                        && heldStack.isOf(LockItems.KEY_ITEM)
-                        && doesUnlock(heldStack.get(RimaDataComponentTypes.RIMA_LOCK)))) { // unlockable
-                cir.setReturnValue(true);
-            } else {
-                player.sendMessage(Text.translatable("message.rima.chest_is_locked"), true);
-                cir.setReturnValue(false);
-            }
-        } else { // chest not locked
-            cir.setReturnValue(true);
-        }
-    }
-
-    @Unique
-    public boolean canLockpick(PlayerEntity player, ItemStack heldStack) {
-        if (!heldStack.isOf(LockItems.LOCKPICK_ITEM)) {
-            return false;
-        }
-
-        if (player.getRandom().nextFloat() < 0.05F) {
-            return true;
-        }
-
-        heldStack.damage(Math.max(1, heldStack.getMaxDamage() / 2), player, EquipmentSlot.MAINHAND);
-        return false;
+      cir.setReturnValue(getLockState().checkUnlocked(player));
     }
 
 }
