@@ -39,7 +39,7 @@ public class Rima implements ModInitializer {
     private void registerEvents() {
       PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
 
-        if (world.getBlockEntity(RimaLockState.Helper.normalizeBlockPos(state, world, pos)) instanceof ILockableRimaEntity rimaEntity 
+        if (world.getBlockEntity(RimaLockState.Helper.normalizeBlockPos(state, pos)) instanceof ILockableRimaEntity rimaEntity 
           && rimaEntity.getLockState().isLocked()) {
             player.sendMessage(Text.translatable("message.rima.not_breakable"), true);
             return false; // cancels the break
