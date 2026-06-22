@@ -19,19 +19,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(DoorBlock.class)
 public class DoorBlockMixin {
 
-    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
-    private void rima$onUse(BlockState state, World world, BlockPos pos,
-                             PlayerEntity player, BlockHitResult hit,
-                             CallbackInfoReturnable<ActionResult> cir) {
+  @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
+  private void rima$onUse(BlockState state, World world, BlockPos pos,
+                           PlayerEntity player, BlockHitResult hit,
+                           CallbackInfoReturnable<ActionResult> cir) {
 
-        RimaLockState.onUseGenericBlock(state, world, pos, player, hit, cir);
+      RimaLockState.onUseGenericBlock(state, world, pos, player, hit, cir);
 
-    }
+  }
 
-    @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
-    private void rima$neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify,
-                              CallbackInfo cir) {
-      RimaLockState.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify, cir);
-      
-    }
+  @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
+  private void rima$neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify,
+                            CallbackInfo cir) {
+    RimaLockState.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify, cir);
+    
+  }
 }
