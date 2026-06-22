@@ -1,6 +1,6 @@
 package com.doulrion.rima.mixin;
 
-import com.doulrion.rima.interfaces.ILockableRimaEntity;
+import com.doulrion.rima.component.RimaLockState;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LeverBlock;
@@ -21,9 +21,7 @@ public class LeverBlockMixin {
     private void rima$onUse(BlockState state, World world, BlockPos pos,
                              PlayerEntity player, BlockHitResult hit,
                              CallbackInfoReturnable<ActionResult> cir) {
-      if (world.getBlockEntity(pos) instanceof ILockableRimaEntity lockableEntity) {
-            lockableEntity.HandleOnUse(state, world, pos, player, hit, cir);
-        }
+      RimaLockState.onUseGenericBlock(state, world, pos, player, hit, cir);
     }
 
 }

@@ -1,9 +1,8 @@
 package com.doulrion.rima.mixin;
 
-import com.doulrion.rima.interfaces.ILockableRimaEntity;
+import com.doulrion.rima.component.RimaLockState;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -24,35 +23,15 @@ public class DoorBlockMixin {
     private void rima$onUse(BlockState state, World world, BlockPos pos,
                              PlayerEntity player, BlockHitResult hit,
                              CallbackInfoReturnable<ActionResult> cir) {
-        if (world.isClient) return;
 
-        BlockEntity be = getLowerBlockEntity(world, pos, state);
+        RimaLockState.onUseGenericBlock(state, world, pos, player, hit, cir);
 
-        if (be instanceof ILockableRimaEntity lockableEntity) {
-            lockableEntity.HandleOnUse(state, world, pos, player, hit, cir);
-        }
     }
 
     @Inject(method = "neighborUpdate", at = @At("HEAD"), cancellable = true)
     private void rima$neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify,
                               CallbackInfo cir) {
-      if (getLowerBlockEntity(world, pos, state) instanceof ILockableRimaEntity doorEntity && doorEntity.isLocked()) {
-        // Prevent BlockUpdate from opening the door if it's locked. Only Player can Unlock
-        cir.cancel();
-        return;
-      }
+      RimaLockState.neighborUpdate(state, world, pos, sourceBlock, sourcePos, notify, cir);
       
-    }
-
-    private BlockEntity getLowerBlockEntity(World world, BlockPos pos, BlockState state) {
-        if (state.contains(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF)){
-          if (state.get(net.minecraft.state.property.Properties.DOUBLE_BLOCK_HALF) == net.minecraft.block.enums.DoubleBlockHalf.UPPER) {
-            return world.getBlockEntity(pos.down());
-          } else {
-            return world.getBlockEntity(pos);
-          }
-        } else {
-            return null;
-        }
     }
 }
