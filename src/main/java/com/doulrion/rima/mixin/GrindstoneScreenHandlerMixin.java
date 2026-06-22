@@ -20,16 +20,19 @@ public abstract class GrindstoneScreenHandlerMixin {
     @Inject(method = "getOutputStack", at = @At("HEAD"), cancellable = true)
     private void rima$getOutputStack(ItemStack firstInput, ItemStack secondInput, CallbackInfoReturnable<ItemStack> cir) {
         if (GrindstoneLockHelper.isKeyLockCombination(firstInput, secondInput)) {
-            cir.setReturnValue(GrindstoneLockHelper.createKeyFromLockResult(firstInput));
+            cir.setReturnValue(GrindstoneLockHelper.createKeyFromLockResult(firstInput,secondInput.getItem()));
         }
         else if (GrindstoneLockHelper.isKeyDuplication(firstInput, secondInput)) {
-            cir.setReturnValue(GrindstoneLockHelper.createKeyFromKeyResult(firstInput));
+            cir.setReturnValue(GrindstoneLockHelper.createKeyFromKeyResult(firstInput,secondInput.getItem()));
         }
         else if (GrindstoneLockHelper.isLockKeyCombination(firstInput, secondInput)) {
-            cir.setReturnValue(GrindstoneLockHelper.createLockFromKeyResult(firstInput));
+            cir.setReturnValue(GrindstoneLockHelper.createLockFromKeyResult(firstInput,secondInput.getItem()));
         }
         else if (GrindstoneLockHelper.isLockDuplication(firstInput, secondInput)) {
-            cir.setReturnValue(GrindstoneLockHelper.createLockFromLockResult(firstInput));
+            cir.setReturnValue(GrindstoneLockHelper.createLockFromLockResult(firstInput,secondInput.getItem()));
+        }
+        else if (GrindstoneLockHelper.isLockIdAssignment(firstInput, secondInput)) {
+            cir.setReturnValue(GrindstoneLockHelper.createLockFromIdAssignmentResult(firstInput,secondInput.getItem()));
         }else{
             return; // continue with vanilla output logic, which will handle non-lock/key inputs as normal
         }

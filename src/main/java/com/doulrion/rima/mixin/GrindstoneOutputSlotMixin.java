@@ -20,6 +20,8 @@ public abstract class GrindstoneOutputSlotMixin {
     private boolean rima$wasLockDuplication;
     @Unique
     private boolean rima$wasLockKeyCombination;
+    @Unique
+    private boolean rima$wasLockIdAssignment;
 
     @Redirect(
             method = "onTakeItem",
@@ -32,11 +34,16 @@ public abstract class GrindstoneOutputSlotMixin {
         rima$wasKeyDuplication = GrindstoneLockHelper.isKeyDuplication(firstInput, secondInput);
         rima$wasLockDuplication = GrindstoneLockHelper.isLockDuplication(firstInput, secondInput);
         rima$wasLockKeyCombination = GrindstoneLockHelper.isLockKeyCombination(firstInput, secondInput);
+        rima$wasLockIdAssignment = GrindstoneLockHelper.isLockIdAssignment(firstInput, secondInput);
 
         // Check if this is one of our custom recipes
         if (rima$wasKeyLockCombination || rima$wasKeyDuplication || rima$wasLockDuplication || rima$wasLockKeyCombination) {
             // Upper slot never consumed for our recipes
             inventory.setStack(0, inventory.getStack(0));
+        } else if (rima$wasLockIdAssignment){
+          ItemStack stack0 = inventory.getStack(0);
+          stack0.decrement(1);
+          inventory.setStack(0, stack0);
         } else {
             // Not our recipe, call the original
             inventory.setStack(slot, stack);
@@ -57,6 +64,8 @@ public abstract class GrindstoneOutputSlotMixin {
             } else {
                 inventory.setStack(1, ItemStack.EMPTY);
             }
+        } else if (rima$wasLockIdAssignment){
+          inventory.setStack(1, ItemStack.EMPTY);
         } else {
             // Not our recipe, call the original
             inventory.setStack(slot, stack);
