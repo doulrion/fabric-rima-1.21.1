@@ -20,7 +20,7 @@ public class RimaGenericBlockLockHelper extends Object{
 
   // onUseGenericBlock for Generic block with LockableEntity
   public static void onUseGenericBlock(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
-    if (world.isClient) return;   // do not handle on client.
+    // if (world.isClient) return;   // do not handle on client.
 
     pos = RimaHelper.normalizeBlockPos(state, pos);
       
@@ -66,7 +66,7 @@ public class RimaGenericBlockLockHelper extends Object{
 
   // neighborUpdate for GenericBlock
   public static boolean neighborUpdate(BlockState state, World world, BlockPos pos){
-    if (world.isClient) return false;   // do not handle on client.
+    // if (world.isClient) return false;   // do not handle on client.
     if (!(world.getBlockEntity(RimaHelper.normalizeBlockPos(state, pos)) instanceof ILockableRimaEntity doorEntity)){
       return false;
     }

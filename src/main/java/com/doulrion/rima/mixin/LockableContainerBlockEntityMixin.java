@@ -3,12 +3,18 @@ package com.doulrion.rima.mixin;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.util.math.Direction;
 import net.minecraft.state.property.Properties;
+import net.minecraft.world.GameMode;
+import net.minecraft.text.Text;
+import net.minecraft.network.packet.Packet;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,11 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.doulrion.rima.Rima;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.component.RimaLockState;
-
-
 import com.doulrion.rima.component.RimaHelper;
-import net.minecraft.world.GameMode;
-import net.minecraft.text.Text;
 
 
 @Mixin(LockableContainerBlockEntity.class)
@@ -125,6 +127,18 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
     lockState.saveToEntityNbt(nbt);
   }
 
+  @Nullable
+  // @Override
+  public Packet<ClientPlayPacketListener> toUpdatePacket() {
+    Rima.LOGGER.info("Chest toUpdatePacket");
+    return BlockEntityUpdateS2CPacket.create((LockableContainerBlockEntity) (Object) this);
+  }
+ 
+  // @Override
+  public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
+    Rima.LOGGER.info("Chest toInitialChunkDataNbt");
+    return ((LockableContainerBlockEntity) (Object) this).createNbt(registries);
+  }
 
   @Inject(method = "checkUnlocked", at = @At("RETURN"), cancellable = true)
 
