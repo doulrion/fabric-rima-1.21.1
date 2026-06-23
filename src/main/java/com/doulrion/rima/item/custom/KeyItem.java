@@ -60,6 +60,6 @@ public class KeyItem extends Item {
     if (RimaHelper.isKeyItem(stack)){
       return lockState.doRemoveLock(le, world, pos, player, gameMode, stack);
     }
-    return ActionResult.SUCCESS;
+    return ActionResult.SUCCESS_NO_ITEM_USED;
   }
 }

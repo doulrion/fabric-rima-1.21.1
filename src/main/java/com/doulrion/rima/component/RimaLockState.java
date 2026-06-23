@@ -277,7 +277,7 @@ public class RimaLockState extends Object {
 // check, remove Lock & spawn item
   public ActionResult doRemoveLock(ILockableRimaEntity lockableEntity, World world, BlockPos pos, PlayerEntity player, GameMode gameMode, ItemStack held){
     if (!isGameModeRemove(gameMode)){  // check if gamemode allows unlocking
-      RimaHelper.Messages.messageLockRemove_not_allowed(player);
+      RimaHelper.Messages.messageLockRemoveNotAllowed(player);
     } else if (!unlockableBy(held)){
       RimaHelper.Messages.messageWrongKey(player);
     } else {
@@ -286,7 +286,7 @@ public class RimaLockState extends Object {
       ItemScatterer.spawn(world, pos.getX(), pos.getY(), pos.getZ(), stack); // drop item
       RimaHelper.Messages.messageLockRemoved(player);
     }
-    return ActionResult.SUCCESS;
+    return ActionResult.SUCCESS_NO_ITEM_USED;
   }
 
 // check & open (returns true to abort action)
@@ -309,8 +309,9 @@ public class RimaLockState extends Object {
     }
     float rnd = player.getRandom().nextFloat(); 
     if (rnd < pickRate){ // keep lockpick when succeeding
+      RimaHelper.Messages.messagePickSuccess(player);
       return false;
-    }      
+    }
     RimaHelper.Messages.messagePickFailed(player);
     held.damage(Math.max(1, held.getMaxDamage() / 2), player, EquipmentSlot.MAINHAND);
     return true;
