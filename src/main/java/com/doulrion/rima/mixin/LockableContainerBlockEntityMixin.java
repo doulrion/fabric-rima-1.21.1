@@ -165,19 +165,12 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
     }
 
     if (RimaHelper.isKeyItem(stack)){
-      if (!lockState.isGameModeUse(gameMode)){
-        RimaHelper.Messages.messageUseNotAllowed(player);
-        cir.setReturnValue(false);
-      } else if (!lockState.unlockableBy(stack)) {
-        RimaHelper.Messages.messageWrongKey(player);
+      if (lockState.doOpenLock(player, gameMode, stack)){
         cir.setReturnValue(false);
       }
       // do nothing on success
     } else if (RimaHelper.isPickItem(stack)){
-      if (!lockState.isGameModePick(gameMode)){
-        RimaHelper.Messages.messagePickNotAllowed(player);
-        cir.setReturnValue(false);
-      } else if (lockState.doPickLock(player, gameMode, stack)){
+      if (lockState.doPickLock(player, gameMode, stack)){
         cir.setReturnValue(false);
       }
       // do nothing on success
