@@ -4,7 +4,6 @@ import com.doulrion.rima.interfaces.ILockableRimaEntity;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.doulrion.rima.Rima;
 import com.doulrion.rima.component.RimaLockState;
 
 import net.minecraft.block.BlockState;
@@ -50,13 +49,11 @@ public class LockedRimaBlockEntity extends BlockEntity implements ILockableRimaE
   @Nullable
   @Override
   public Packet<ClientPlayPacketListener> toUpdatePacket() {
-    Rima.LOGGER.info("Generic toUpdatePacket");
     return BlockEntityUpdateS2CPacket.create(this);
   }
  
   @Override
   public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
-    Rima.LOGGER.info("Generic toInitialChunkDataNbt");
     return createNbt(registries);
   }
 

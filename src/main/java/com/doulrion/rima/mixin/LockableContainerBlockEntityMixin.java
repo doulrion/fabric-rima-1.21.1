@@ -130,13 +130,11 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
   @Nullable
   // @Override
   public Packet<ClientPlayPacketListener> toUpdatePacket() {
-    Rima.LOGGER.info("Chest toUpdatePacket");
     return BlockEntityUpdateS2CPacket.create((LockableContainerBlockEntity) (Object) this);
   }
  
   // @Override
   public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
-    Rima.LOGGER.info("Chest toInitialChunkDataNbt");
     return ((LockableContainerBlockEntity) (Object) this).createNbt(registries);
   }
 
