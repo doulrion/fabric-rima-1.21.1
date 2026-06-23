@@ -89,19 +89,19 @@ public class LockItem extends Item {
       
       if (le.getLockState().isLocked()){
         RimaHelper.Messages.messageAlreadyLocked(player);
-        return ActionResult.SUCCESS;
+        return ActionResult.SUCCESS_NO_ITEM_USED;
       }
 
       RimaLockState heldLockState = RimaLockState.fromLockItem(stack);
 
       if (!heldLockState.isGameModeAdd(gameMode)){
-        RimaHelper.Messages.messageLockAdd_not_allowed(player);
-        return ActionResult.SUCCESS;
+        RimaHelper.Messages.messageLockAddNotAllowed(player);
+        return ActionResult.SUCCESS_NO_ITEM_USED;
       }
 
       if (!heldLockState.isLocked()){
         RimaHelper.Messages.messageLockInvalid(player);
-        return ActionResult.SUCCESS;
+        return ActionResult.SUCCESS_NO_ITEM_USED;
       }
       
       le.setLockState(heldLockState.clone());    // simply clone lockstate to lock.
@@ -109,7 +109,7 @@ public class LockItem extends Item {
       RimaHelper.Messages.messageLockAdded(player);
       stack.decrement(1);
 
-      return ActionResult.SUCCESS;
+      return ActionResult.SUCCESS_NO_ITEM_USED;
     }
 
 }

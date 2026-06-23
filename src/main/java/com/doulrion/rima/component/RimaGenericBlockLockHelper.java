@@ -20,7 +20,7 @@ public class RimaGenericBlockLockHelper extends Object{
 
   // onUseGenericBlock for Generic block with LockableEntity
   public static void onUseGenericBlock(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
-    if (world.isClient) return;   // do not handle on client.
+    // if (world.isClient) return;   // do not handle on client.
 
     pos = RimaHelper.normalizeBlockPos(state, pos);
       
@@ -39,34 +39,22 @@ public class RimaGenericBlockLockHelper extends Object{
     if (player.isSneaking()){   // try unlock
       if (held.isEmpty() && gameMode == GameMode.CREATIVE){
         player.sendMessage(Text.of(lockstate.debugString()), false);
-        cir.setReturnValue(ActionResult.SUCCESS);
+        cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
         return;
       } else {
         cir.setReturnValue(ActionResult.FAIL); // allow placing of blocks
         return;  
       }
     } else {
-      if (lockstate.isGameModeBypassUse(gameMode)){  // bypass using 
-        RimaHelper.Messages.messageBypassed(player);
-        return;
-      } else if (RimaHelper.isKeyItem(held)){
-        if(lockstate.doOpenLock(player, gameMode, held)){
-          cir.setReturnValue(ActionResult.SUCCESS);
-        };
-      } else if (RimaHelper.isPickItem(held)){
-        if(lockstate.doPickLock(player, gameMode, held)){
-          cir.setReturnValue(ActionResult.SUCCESS);
-        }
-      } else {
-        RimaHelper.Messages.messageLockedNoKey(player);
-        cir.setReturnValue(ActionResult.CONSUME);
+      if (lockstate.doUse(player, gameMode, held)){
+        cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
       }
     }    
   } 
 
   // neighborUpdate for GenericBlock
   public static boolean neighborUpdate(BlockState state, World world, BlockPos pos){
-    if (world.isClient) return false;   // do not handle on client.
+    // if (world.isClient) return false;   // do not handle on client.
     if (!(world.getBlockEntity(RimaHelper.normalizeBlockPos(state, pos)) instanceof ILockableRimaEntity doorEntity)){
       return false;
     }

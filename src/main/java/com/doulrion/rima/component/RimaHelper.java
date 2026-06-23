@@ -18,7 +18,7 @@ public class RimaHelper {
     public static void messageBypassed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.bypassed"), true);}
 
     // pick messages
-    public static void messagePickSuccess(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.pick_failed"), true);}
+    public static void messagePickSuccess(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.pick_success"), true);}
     public static void messagePickFailed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.pick_failed"), true);}
     public static void messagePickNotAllowed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.pick_not_allowed"), true);}
     
@@ -31,9 +31,9 @@ public class RimaHelper {
     // lock messages
     public static void messageLockInvalid(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.lock_invalid"), true);}
     public static void messageLockAdded(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.lock_added"), true);}
-    public static void messageLockAdd_not_allowed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.add_not_allowed"), true);}
+    public static void messageLockAddNotAllowed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.add_not_allowed"), true);}
     public static void messageLockRemoved(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.lock_removed"), true);}
-    public static void messageLockRemove_not_allowed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.remove_not_allowed"), true);}
+    public static void messageLockRemoveNotAllowed(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.remove_not_allowed"), true);}
     public static void messageNotBreakable(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.not_breakable"), true);}
     public static void messageAlreadyLocked(PlayerEntity player){player.sendMessage(Text.translatable("message.rima.already_locked"), true);}
   }

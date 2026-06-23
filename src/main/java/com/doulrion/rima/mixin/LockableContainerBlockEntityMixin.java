@@ -3,12 +3,18 @@ package com.doulrion.rima.mixin;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.util.math.Direction;
 import net.minecraft.state.property.Properties;
+import net.minecraft.world.GameMode;
+import net.minecraft.text.Text;
+import net.minecraft.network.packet.Packet;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,11 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.doulrion.rima.Rima;
 import com.doulrion.rima.interfaces.ILockableRimaEntity;
 import com.doulrion.rima.component.RimaLockState;
-
-
 import com.doulrion.rima.component.RimaHelper;
-import net.minecraft.world.GameMode;
-import net.minecraft.text.Text;
 
 
 @Mixin(LockableContainerBlockEntity.class)
@@ -125,6 +127,16 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
     lockState.saveToEntityNbt(nbt);
   }
 
+  @Nullable
+  // @Override
+  public Packet<ClientPlayPacketListener> toUpdatePacket() {
+    return BlockEntityUpdateS2CPacket.create((LockableContainerBlockEntity) (Object) this);
+  }
+ 
+  // @Override
+  public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
+    return ((LockableContainerBlockEntity) (Object) this).createNbt(registries);
+  }
 
   @Inject(method = "checkUnlocked", at = @At("RETURN"), cancellable = true)
 
@@ -147,31 +159,8 @@ public abstract class LockableContainerBlockEntityMixin implements ILockableRima
       return;
     }
 
-    if (lockState.isGameModeBypassUse(gameMode)){
-      RimaHelper.Messages.messageBypassed(player);
-      return;
-    }
-
-    if (RimaHelper.isKeyItem(stack)){
-      if (!lockState.isGameModeUse(gameMode)){
-        RimaHelper.Messages.messageUseNotAllowed(player);
-        cir.setReturnValue(false);
-      } else if (!lockState.unlockableBy(stack)) {
-        RimaHelper.Messages.messageWrongKey(player);
-        cir.setReturnValue(false);
-      }
-      // do nothing on success
-    } else if (RimaHelper.isPickItem(stack)){
-      if (!lockState.isGameModePick(gameMode)){
-        RimaHelper.Messages.messagePickNotAllowed(player);
-        cir.setReturnValue(false);
-      } else if (lockState.doPickLock(player, gameMode, stack)){
-        cir.setReturnValue(false);
-      }
-      // do nothing on success
-    } else {
-      RimaHelper.Messages.messageLockedNoKey(player);
-      cir.setReturnValue(false);
+    if (lockState.doUse(player, gameMode, stack)){
+      cir.setReturnValue(false);  
     }
   }
 
