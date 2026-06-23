@@ -46,19 +46,7 @@ public class RimaGenericBlockLockHelper extends Object{
         return;  
       }
     } else {
-      if (lockstate.isGameModeBypassUse(gameMode)){  // bypass using 
-        RimaHelper.Messages.messageBypassed(player);
-        return;
-      } else if (RimaHelper.isKeyItem(held)){
-        if(lockstate.doOpenLock(player, gameMode, held)){
-          cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
-        };
-      } else if (RimaHelper.isPickItem(held)){
-        if(lockstate.doPickLock(player, gameMode, held)){
-          cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
-        }
-      } else {
-        RimaHelper.Messages.messageLockedNoKey(player);
+      if (lockstate.doUse(player, gameMode, held)){
         cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
       }
     }    

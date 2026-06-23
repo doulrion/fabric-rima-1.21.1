@@ -317,4 +317,19 @@ public class RimaLockState extends Object {
     return true;
   }
 
+  // returns true to abort using
+  public boolean doUse(PlayerEntity player, GameMode gameMode, ItemStack held){
+    if (isGameModeBypassUse(gameMode)){  // bypass using 
+      RimaHelper.Messages.messageBypassed(player);
+      return false;
+    } else if (RimaHelper.isKeyItem(held)){
+      return doOpenLock(player, gameMode, held);
+    } else if (RimaHelper.isPickItem(held)){
+      return doPickLock(player, gameMode, held);
+    } else {
+      RimaHelper.Messages.messageLockedNoKey(player);
+      return true;
+    }
+  }
+
 }
