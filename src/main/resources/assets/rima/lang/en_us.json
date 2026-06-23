@@ -8,21 +8,27 @@
   "item.rima.diamond_lock": "Diamond Lock",
   "item.rima.netherite_lock": "Netherite Lock",
   "item.rima.admin_lock": "Admin Lock",
+
   "itemGroup.rima.lock_group": "Locks",
+
   "tooltip.rima.lock_uuid": "Lock ID: %s",
 
-  "message.rima.removed_lock": "Removed Lock!",
-  "message.rima.already_locked": "Cannot lock. Already locked!",
-  "message.rima.locked": "Locked!",
-  "message.rima.admin_locked": "Admin locked!",
-  "message.rima.is_locked": "This is locked!",
-  "message.rima.not_breakable": "You cannot break a locked block!",
-  "message.rima.wrong_key": "Wrong Key!",
+  "message.rima.bypassed": "Bypassed lock",
+
+  "message.rima.pick_success": "Lockpicking Success",
   "message.rima.pick_failed": "Lockpicking Failed",
-  "message.rima.pick_not_allowed": "Lockpicking not allowed",
-  "message.rima.open_not_allowed": "Opening not allowed",
-  "message.rima.add_not_allowed": "Cant add this lock. Missing priviledges",
-  "message.rima.remove_not_allowed": "Removing not allowed",
-  "message.rima.invalid_lock": "Invalid Lock. has it not been crafted?",
-  "message.rima.bypassed": "bypassed lock."
+  "message.rima.pick_not_allowed": "Cant Pick this Lock",
+
+  "message.rima.use_success": "Unlocked",
+  "message.rima.locked_no_key": "You need a key for this.",
+  "message.rima.wrong_key": "Key does not fit!",
+  "message.rima.use_not_allowed": "Cant use this!",
+
+  "message.rima.lock_invalid": "Invalid lock.",
+  "message.rima.lock_added": "Added lock",
+  "message.rima.add_not_allowed": "Cant add this lock. Wrong Gamemode.",
+  "message.rima.lock_removed": "Removed Lock",
+  "message.rima.remove_not_allowed": "Cant Remove this Lock.",
+  "message.rima.not_breakable": "Can't break a locked Block.",
+  "message.rima.already_locked": "Cant lock. Already locked!"
 }
