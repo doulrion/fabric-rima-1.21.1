@@ -39,7 +39,7 @@ public class RimaGenericBlockLockHelper extends Object{
     if (player.isSneaking()){   // try unlock
       if (held.isEmpty() && gameMode == GameMode.CREATIVE){
         player.sendMessage(Text.of(lockstate.debugString()), false);
-        cir.setReturnValue(ActionResult.SUCCESS);
+        cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
         return;
       } else {
         cir.setReturnValue(ActionResult.FAIL); // allow placing of blocks
@@ -51,15 +51,15 @@ public class RimaGenericBlockLockHelper extends Object{
         return;
       } else if (RimaHelper.isKeyItem(held)){
         if(lockstate.doOpenLock(player, gameMode, held)){
-          cir.setReturnValue(ActionResult.SUCCESS);
+          cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
         };
       } else if (RimaHelper.isPickItem(held)){
         if(lockstate.doPickLock(player, gameMode, held)){
-          cir.setReturnValue(ActionResult.SUCCESS);
+          cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
         }
       } else {
         RimaHelper.Messages.messageLockedNoKey(player);
-        cir.setReturnValue(ActionResult.CONSUME);
+        cir.setReturnValue(ActionResult.SUCCESS_NO_ITEM_USED);
       }
     }    
   } 
