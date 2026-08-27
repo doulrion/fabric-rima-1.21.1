@@ -3,6 +3,7 @@ package com.doulrion.rima.item;
 import java.util.ArrayList;
 
 import com.doulrion.rima.Rima;
+import com.doulrion.rima.item.custom.ConeItem;
 import com.doulrion.rima.item.custom.KeyItem;
 import com.doulrion.rima.item.custom.LockItem;
 
@@ -69,6 +70,8 @@ public class LockItems {
                                             new GameMode[]{GameMode.CREATIVE},
                                             new GameMode[]{GameMode.CREATIVE, GameMode.SPECTATOR}
                                             ));
+    public static final Item CONE_ITEM = registerItem("cone", new ConeItem(new Item.Settings()));
+    final public static Item CORRUPTED_CONE_ITEM = registerItem("cone_corrupted", new ConeItem(new Item.Settings()));
     public static final ItemGroup LOCK_GROUP = Registry.register(Registries.ITEM_GROUP,
             Identifier.of(Rima.MOD_ID, "lock_group"), FabricItemGroup.builder()
                     .icon(() -> new ItemStack(LOCK_ITEM))
@@ -76,6 +79,8 @@ public class LockItems {
                     .entries((context, entries) -> {
                         entries.add(KEY_ITEM);
                         entries.add(ADMIN_KEY_ITEM);
+                        entries.add(CONE_ITEM);
+                        entries.add(CORRUPTED_CONE_ITEM);
                         entries.add(LOCKPICK_ITEM);
                         entries.add(LOCK_ITEM);
                         entries.add(DIAMOND_LOCK_ITEM);
@@ -87,6 +92,7 @@ public class LockItems {
                     .build());
     public static final ArrayList<Item> KeyItems = new ArrayList<Item>();
     public static final ArrayList<Item> LockItems = new ArrayList<Item>();
+    public static final ArrayList<Item> ConeItems = new ArrayList<Item>();
 
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, Identifier.of(Rima.MOD_ID, name), item);
@@ -103,6 +109,9 @@ public class LockItems {
       LockItems.add(NETHERITE_LOCK_ITEM);
       LockItems.add(DUNGEON_LOCK_ITEM);
       LockItems.add(PICKABLE_DUNGEON_LOCK_ITEM);
+      // add cones to list
+      ConeItems.add(CONE_ITEM);
+      ConeItems.add(CORRUPTED_CONE_ITEM);
     }
 
 }
