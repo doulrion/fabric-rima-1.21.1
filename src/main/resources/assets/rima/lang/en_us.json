@@ -9,6 +9,9 @@
   "item.rima.netherite_lock": "Netherite Lock",
   "item.rima.admin_lock": "Admin Lock",
 
+  "item.rima.cone": "Cone",
+  "item.rima.cone_corrupted": "Corrupted Cone",
+
   "itemGroup.rima.lock_group": "Locks",
 
   "tooltip.rima.lock_uuid": "Lock ID: %s",
